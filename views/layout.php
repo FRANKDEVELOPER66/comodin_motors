@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="build/js/app.js"></script>
-    <link rel="shortcut icon" href="<?= asset('images/cit.png') ?>" type="image/x-icon">
+    <link rel="shortcut icon" href="<?= asset('images/1.png') ?>" type="image/x-icon">
     <link rel="stylesheet" href="<?= asset('build/styles.css') ?>">
     <title>DemoApp</title>
 </head>
@@ -17,8 +17,8 @@
                 <span class="navbar-toggler-icon"></span>
             </button>
             <a class="navbar-brand" href="/ejemplo/">
-                <img src="<?= asset('./images/cit.png') ?>" width="35px'" alt="cit" >
-                Aplicaciones
+                <img src="<?= asset('./images/1.png') ?>" width="35px'" alt="cit" >
+                Motors
             </a>
             <div class="collapse navbar-collapse" id="navbarToggler">
                 
@@ -64,7 +64,7 @@
         <div class="row justify-content-center text-center">
             <div class="col-12">
                 <p style="font-size:xx-small; font-weight: bold;">
-                        Comando de Informática y Tecnología, <?= date('Y') ?> &copy;
+                        Frankd Depeloper, <?= date('Y') ?> &copy;
                 </p>
             </div>
         </div>
