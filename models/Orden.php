@@ -62,10 +62,10 @@ class Orden extends ActiveRecord
     {
         $sql = "CALL sp_generar_numero_orden(@numero)";
         self::$db->query($sql);
-        
+
         $resultado = self::$db->query("SELECT @numero as numero_orden");
         $fila = $resultado->fetch_assoc();
-        
+
         return $fila['numero_orden'];
     }
 
@@ -171,5 +171,107 @@ class Orden extends ActiveRecord
 
         $resultado = self::fetchArray($sql, [$id_orden]);
         return $resultado[0] ?? null;
+    }
+
+    /**
+     * Contar órdenes por estado(s)
+     */
+    public static function contarPorEstado($estados = [])
+    {
+        if (empty($estados)) {
+            return 0;
+        }
+
+        // Escapar valores manualmente para evitar SQL injection
+        $estadosEscapados = array_map(function ($estado) {
+            return self::$db->quote($estado);
+        }, $estados);
+
+        $estadosStr = implode(',', $estadosEscapados);
+
+        $sql = "SELECT COUNT(*) as total 
+            FROM ordenes_servicio 
+            WHERE estado_orden IN ($estadosStr)";
+
+        $resultado = self::consultarSQL($sql);
+        return $resultado ? intval($resultado[0]->total) : 0;
+    }
+
+    /**
+     * Contar completadas hoy
+     */
+    public static function contarCompletadasHoy()
+    {
+        $sql = "SELECT COUNT(*) as total 
+                FROM ordenes_servicio 
+                WHERE estado_orden = 'completado' 
+                AND DATE(fecha_orden) = CURDATE()";
+
+        $resultado = self::fetchFirst($sql);
+        return $resultado ? intval($resultado['total']) : 0;
+    }
+
+    /**
+     * Contar órdenes por fecha
+     */
+    public static function contarPorFecha($fecha)
+    {
+        $fecha = self::$db->quote($fecha);
+        $sql = "SELECT COUNT(*) as total 
+            FROM ordenes_servicio 
+            WHERE DATE(fecha_orden) = $fecha";
+
+        $resultado = self::consultarSQL($sql);
+        return $resultado ? intval($resultado[0]->total) : 0;
+    }
+
+    /**
+     * Sumar ingresos por fecha
+     */
+    public static function sumarIngresosPorFecha($fecha)
+    {
+        $fecha = self::$db->quote($fecha);
+        $sql = "SELECT SUM(costo_total) as total 
+            FROM ordenes_servicio 
+            WHERE DATE(fecha_orden) = $fecha";
+
+        $resultado = self::consultarSQL($sql);
+        return $resultado && $resultado[0]->total ? floatval($resultado[0]->total) : 0;
+    }
+
+    /**
+     * Contar completadas por fecha
+     */
+    public static function contarCompletadasPorFecha($fecha)
+    {
+        $fecha = self::$db->quote($fecha);
+        $sql = "SELECT COUNT(*) as total 
+            FROM ordenes_servicio 
+            WHERE estado_orden = 'completado' 
+            AND DATE(fecha_orden) = $fecha";
+
+        $resultado = self::consultarSQL($sql);
+        return $resultado ? intval($resultado[0]->total) : 0;
+    }
+
+    /**
+     * Obtener órdenes recientes
+     */
+    public static function obtenerRecientes($limite = 5)
+    {
+        $sql = "SELECT 
+                o.*,
+                c.nombre AS cliente_nombre,
+                v.marca,
+                v.modelo,
+                v.anio,
+                v.placas
+            FROM ordenes_servicio o
+            INNER JOIN clientes c ON o.id_cliente = c.id_cliente
+            INNER JOIN vehiculos v ON o.id_vehiculo = v.id_vehiculo
+            ORDER BY o.fecha_orden DESC, o.hora_ingreso DESC
+            LIMIT " . intval($limite);
+
+        return self::fetchArray($sql);
     }
 }

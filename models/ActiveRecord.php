@@ -205,29 +205,53 @@ class ActiveRecord
         return $array;
     }
 
-    public static function fetchArray($query)
-    {
+    /**
+ * Ejecutar query con parámetros preparados y retornar array
+ */
+public static function fetchArray($query, $params = [])
+{
+    if (empty($params)) {
+        // Si no hay parámetros, usar el método original
         $resultado = self::$db->query($query);
-        $respuesta = $resultado->fetchAll(PDO::FETCH_ASSOC);
-        foreach ($respuesta as $value) {
-            $data[] = array_change_key_case(array_map('utf8_encode', $value));
-        }
-        $resultado->closeCursor();
-        return $data;
+    } else {
+        // Si hay parámetros, usar prepared statement
+        $stmt = self::$db->prepare($query);
+        $stmt->execute($params);
+        $resultado = $stmt;
     }
+    
+    $respuesta = $resultado->fetchAll(PDO::FETCH_ASSOC);
+    $data = [];
+    foreach ($respuesta as $value) {
+        $data[] = array_change_key_case(array_map('utf8_encode', $value));
+    }
+    $resultado->closeCursor();
+    return $data;
+}
 
-
-    public static function fetchFirst($query)
-    {
+/**
+ * Ejecutar query con parámetros preparados y retornar primer resultado
+ */
+public static function fetchFirst($query, $params = [])
+{
+    if (empty($params)) {
+        // Si no hay parámetros, usar el método original
         $resultado = self::$db->query($query);
-        $respuesta = $resultado->fetchAll(PDO::FETCH_ASSOC);
-        $data = [];
-        foreach ($respuesta as $value) {
-            $data[] = array_change_key_case(array_map('utf8_encode', $value));
-        }
-        $resultado->closeCursor();
-        return array_shift($data);
+    } else {
+        // Si hay parámetros, usar prepared statement
+        $stmt = self::$db->prepare($query);
+        $stmt->execute($params);
+        $resultado = $stmt;
     }
+    
+    $respuesta = $resultado->fetchAll(PDO::FETCH_ASSOC);
+    $data = [];
+    foreach ($respuesta as $value) {
+        $data[] = array_change_key_case(array_map('utf8_encode', $value));
+    }
+    $resultado->closeCursor();
+    return array_shift($data);
+}
 
     protected static function crearObjeto($registro)
     {

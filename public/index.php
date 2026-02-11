@@ -1,19 +1,18 @@
 <?php 
 require_once __DIR__ . '/../includes/app.php';
 
-
 use MVC\Router;
 use Controllers\AppController;
 use Controllers\OrdenController;
+use Controllers\DashboardController; // ← AGREGAR ESTA LÍNEA
 
 $router = new Router();
 $router->setBaseURL('/' . $_ENV['APP_NAME']);
 
 $router->get('/', [AppController::class,'index']);
 
-$router->render('dashboard/index', []); 
-
-// En Router.php, agregar:
+// ❌ ELIMINAR ESTA LÍNEA:
+// $router->render('dashboard/index', []); 
 
 // Órdenes
 $router->get('/orden', [OrdenController::class, 'index']);
@@ -32,5 +31,6 @@ $router->post('/API/orden/estado', [OrdenController::class, 'cambiarEstadoAPI'])
 
 // Dashboard
 $router->get('/dashboard', [DashboardController::class, 'index']);
-// Comprueba y valida las rutas, que existan y les asigna las funciones del Controlador
+
+// Comprueba y valida las rutas
 $router->comprobarRutas();
