@@ -1,16 +1,16 @@
 import '../scss/app.scss';
 
-document.addEventListener('DOMContentLoaded', (e)=> {
+document.addEventListener('DOMContentLoaded', (e) => {
     const dropdown = document.querySelector('.dropdown-menu');
     dropdown.style.margin = 0;
 
 
     let items = document.querySelectorAll('.nav-link')
     items.forEach(item => {
-        if(item.href == location.href){
+        if (item.href == location.href) {
             item.classList.add('active')
-            if(item.classList.contains('dropdown-item')){
-               item.parentElement.parentElement.previousElementSibling.classList.add('active')
+            if (item.classList.contains('dropdown-item')) {
+                item.parentElement.parentElement.previousElementSibling.classList.add('active')
             }
         }
     });
@@ -25,15 +25,409 @@ document.onreadystatechange = () => {
         case "loading":
 
             break;
-        case "interactive": 
+        case "interactive":
             document.getElementById('bar') ? document.getElementById('bar').style.width = '35%' : null;
             break;
-            
+
         case "complete":
             document.getElementById('bar') ? document.getElementById('bar').style.width = '100%' : null;
             setTimeout(() => {
-                document.getElementById('bar') ? document.getElementById('bar').parentElement.style.display = 'none' : null 
-            }, 1000);   
+                document.getElementById('bar') ? document.getElementById('bar').parentElement.style.display = 'none' : null
+            }, 1000);
             break;
     }
 }
+
+
+
+import { Dropdown } from "bootstrap";
+
+// ============================================
+// COMODÍN MOTORS - Sistema de Gestión
+// ============================================
+
+class ComodinMotorsApp {
+    constructor() {
+        this.sidebar = document.getElementById('sidebar');
+        this.sidebarToggle = document.getElementById('sidebarToggle');
+        this.sidebarClose = document.getElementById('sidebarClose');
+        this.sidebarOverlay = document.getElementById('sidebarOverlay');
+        this.loader = document.getElementById('loader');
+        this.scrollProgressBar = document.getElementById('scrollProgressBar');
+
+        this.init();
+    }
+
+    init() {
+        // Ocultar loader cuando la página cargue
+        this.initLoader();
+
+        // Inicializar sidebar
+        this.initSidebar();
+
+        // Inicializar submenus
+        this.initSubmenus();
+
+        // Inicializar scroll progress
+        this.initScrollProgress();
+
+        // Inicializar pantalla completa
+        this.initFullscreen();
+
+        // Marcar link activo
+        this.setActiveLink();
+
+        console.log('🚗 Comodín Motors App Initialized');
+    }
+
+    // ============================================
+    // LOADER
+    // ============================================
+    initLoader() {
+        // Simular carga (puedes ajustar o quitar esto)
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                this.loader.classList.add('hidden');
+                // Remover del DOM después de la animación
+                setTimeout(() => {
+                    this.loader.style.display = 'none';
+                }, 500);
+            }, 1500); // Duración del loader
+        });
+    }
+
+    // ============================================
+    // SIDEBAR
+    // ============================================
+    initSidebar() {
+        // Toggle sidebar
+        if (this.sidebarToggle) {
+            this.sidebarToggle.addEventListener('click', () => {
+                this.toggleSidebar();
+            });
+        }
+
+        // Cerrar sidebar
+        if (this.sidebarClose) {
+            this.sidebarClose.addEventListener('click', () => {
+                this.closeSidebar();
+            });
+        }
+
+        // Cerrar con overlay
+        if (this.sidebarOverlay) {
+            this.sidebarOverlay.addEventListener('click', () => {
+                this.closeSidebar();
+            });
+        }
+
+        // Cerrar al presionar ESC
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                this.closeSidebar();
+            }
+        });
+
+        // Responsive: cerrar sidebar al cambiar tamaño
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 991) {
+                this.closeSidebar();
+            }
+        });
+    }
+
+    toggleSidebar() {
+        this.sidebar.classList.toggle('active');
+        this.sidebarOverlay.classList.toggle('active');
+        document.body.style.overflow = this.sidebar.classList.contains('active') ? 'hidden' : '';
+    }
+
+    closeSidebar() {
+        this.sidebar.classList.remove('active');
+        this.sidebarOverlay.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
+    // ============================================
+    // SUBMENUS
+    // ============================================
+    initSubmenus() {
+        const submenuItems = document.querySelectorAll('.has-submenu > .nav-link');
+
+        submenuItems.forEach(item => {
+            item.addEventListener('click', (e) => {
+                e.preventDefault();
+
+                const parent = item.parentElement;
+                const wasActive = parent.classList.contains('active');
+
+                // Cerrar todos los submenus
+                document.querySelectorAll('.has-submenu').forEach(sub => {
+                    sub.classList.remove('active');
+                });
+
+                // Abrir el clickeado (si no estaba activo)
+                if (!wasActive) {
+                    parent.classList.add('active');
+                }
+            });
+        });
+
+        // Mantener submenu abierto si hay un link activo dentro
+        document.querySelectorAll('.submenu a').forEach(link => {
+            if (link.classList.contains('active')) {
+                link.closest('.has-submenu').classList.add('active');
+            }
+        });
+    }
+
+    // ============================================
+    // SCROLL PROGRESS BAR
+    // ============================================
+    initScrollProgress() {
+        window.addEventListener('scroll', () => {
+            const winScroll = document.documentElement.scrollTop;
+            const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            const scrolled = (winScroll / height) * 100;
+
+            if (this.scrollProgressBar) {
+                this.scrollProgressBar.style.width = scrolled + '%';
+            }
+        });
+    }
+
+    // ============================================
+    // PANTALLA COMPLETA
+    // ============================================
+    initFullscreen() {
+        const fullscreenBtn = document.getElementById('fullscreenBtn');
+
+        if (fullscreenBtn) {
+            fullscreenBtn.addEventListener('click', () => {
+                this.toggleFullscreen();
+            });
+        }
+    }
+
+    toggleFullscreen() {
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen().catch(err => {
+                console.error('Error al activar pantalla completa:', err);
+            });
+        } else {
+            document.exitFullscreen();
+        }
+    }
+
+    // ============================================
+    // MARCAR LINK ACTIVO
+    // ============================================
+    setActiveLink() {
+        const currentPath = window.location.pathname;
+        const links = document.querySelectorAll('.sidebar-nav a');
+
+        links.forEach(link => {
+            link.classList.remove('active');
+
+            if (link.getAttribute('href') === currentPath) {
+                link.classList.add('active');
+
+                // Si está en un submenu, abrir el parent
+                const submenu = link.closest('.submenu');
+                if (submenu) {
+                    submenu.closest('.has-submenu').classList.add('active');
+                }
+            }
+        });
+    }
+}
+
+// ============================================
+// UTILIDADES ADICIONALES
+// ============================================
+
+// Animación suave al hacer scroll
+function smoothScroll() {
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            const href = this.getAttribute('href');
+            if (href !== '#') {
+                e.preventDefault();
+                const target = document.querySelector(href);
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            }
+        });
+    });
+}
+
+// Tooltips de Bootstrap
+function initTooltips() {
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+}
+
+// Confirmación antes de eliminar
+function confirmDelete() {
+    document.querySelectorAll('[data-confirm-delete]').forEach(btn => {
+        btn.addEventListener('click', function (e) {
+            if (!confirm('¿Estás seguro de que deseas eliminar este elemento?')) {
+                e.preventDefault();
+            }
+        });
+    });
+}
+
+// Auto-cerrar alertas
+function autoCloseAlerts() {
+    const alerts = document.querySelectorAll('.alert-auto-close');
+    alerts.forEach(alert => {
+        setTimeout(() => {
+            const bsAlert = new bootstrap.Alert(alert);
+            bsAlert.close();
+        }, 5000);
+    });
+}
+
+// Formatear números como moneda
+function formatCurrency(amount, currency = 'GTQ') {
+    return new Intl.NumberFormat('es-GT', {
+        style: 'currency',
+        currency: currency
+    }).format(amount);
+}
+
+// Formatear fechas
+function formatDate(date, format = 'long') {
+    const options = {
+        short: { year: 'numeric', month: '2-digit', day: '2-digit' },
+        long: { year: 'numeric', month: 'long', day: 'numeric' },
+        time: { hour: '2-digit', minute: '2-digit' }
+    };
+
+    return new Intl.DateTimeFormat('es-GT', options[format]).format(new Date(date));
+}
+
+// Copiar al portapapeles
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(() => {
+        showToast('Copiado al portapapeles', 'success');
+    });
+}
+
+// Mostrar toast notification
+function showToast(message, type = 'info') {
+    // Implementar con tu librería de notificaciones favorita
+    console.log(`[${type.toUpperCase()}] ${message}`);
+}
+
+// Validación de formularios en tiempo real
+function initFormValidation() {
+    const forms = document.querySelectorAll('.needs-validation');
+
+    forms.forEach(form => {
+        form.addEventListener('submit', function (e) {
+            if (!form.checkValidity()) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            form.classList.add('was-validated');
+        });
+
+        // Validación en tiempo real
+        const inputs = form.querySelectorAll('input, select, textarea');
+        inputs.forEach(input => {
+            input.addEventListener('blur', function () {
+                if (this.checkValidity()) {
+                    this.classList.remove('is-invalid');
+                    this.classList.add('is-valid');
+                } else {
+                    this.classList.remove('is-valid');
+                    this.classList.add('is-invalid');
+                }
+            });
+        });
+    });
+}
+
+// Búsqueda en tablas
+function initTableSearch(searchInputId, tableId) {
+    const searchInput = document.getElementById(searchInputId);
+    const table = document.getElementById(tableId);
+
+    if (searchInput && table) {
+        searchInput.addEventListener('keyup', function () {
+            const filter = this.value.toLowerCase();
+            const rows = table.querySelectorAll('tbody tr');
+
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(filter) ? '' : 'none';
+            });
+        });
+    }
+}
+
+// Previsualizar imagen antes de subir
+function previewImage(input, previewId) {
+    const file = input.files[0];
+    const preview = document.getElementById(previewId);
+
+    if (file && preview) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            preview.src = e.target.result;
+            preview.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+    }
+}
+
+// Contador animado
+function animateCounter(element, target, duration = 2000) {
+    let current = 0;
+    const increment = target / (duration / 16);
+
+    const timer = setInterval(() => {
+        current += increment;
+        if (current >= target) {
+            element.textContent = Math.ceil(target);
+            clearInterval(timer);
+        } else {
+            element.textContent = Math.ceil(current);
+        }
+    }, 16);
+}
+
+// Exportar funciones globales
+window.ComodinMotors = {
+    formatCurrency,
+    formatDate,
+    copyToClipboard,
+    showToast,
+    previewImage,
+    animateCounter
+};
+
+// ============================================
+// INICIALIZAR APP
+// ============================================
+document.addEventListener('DOMContentLoaded', () => {
+    // Inicializar app principal
+    new ComodinMotorsApp();
+
+    // Inicializar utilidades
+    smoothScroll();
+    initTooltips();
+    confirmDelete();
+    autoCloseAlerts();
+    initFormValidation();
+
+    console.log('✅ Todas las funcionalidades cargadas');
+});

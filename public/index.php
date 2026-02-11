@@ -9,5 +9,7 @@ $router->setBaseURL('/' . $_ENV['APP_NAME']);
 
 $router->get('/', [AppController::class,'index']);
 
+$router->render('dashboard/index', []); 
+
 // Comprueba y valida las rutas, que existan y les asigna las funciones del Controlador
 $router->comprobarRutas();

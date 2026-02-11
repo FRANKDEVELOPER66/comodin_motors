@@ -1,2 +1,641 @@
 @import "~bootstrap/scss/bootstrap";
 @import "~bootstrap-icons/font/bootstrap-icons.css";
+
+
+// ============================================
+// VARIABLES DE COMODÍN MOTORS
+// ============================================
+$color-negro: #000000;
+$color-verde-neon: #00ff00;
+$color-verde-oscuro: #00cc00;
+$color-gris-oscuro: #1a1a1a;
+$color-gris: #2a2a2a;
+$color-gris-claro: #3a3a3a;
+$color-blanco: #ffffff;
+$color-gris-texto: #b0b0b0;
+
+$sidebar-width: 280px;
+$sidebar-collapsed: 80px;
+$topbar-height: 70px;
+
+// ============================================
+// RESET Y BASE
+// ============================================
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: $color-negro;
+    color: $color-blanco;
+    overflow-x: hidden;
+}
+
+// ============================================
+// LOADER ANIMADO ULTRA TOP
+// ============================================
+.loader-wrapper {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: $color-negro;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 99999;
+    transition: opacity 0.5s ease, visibility 0.5s ease;
+    
+    &.hidden {
+        opacity: 0;
+        visibility: hidden;
+    }
+}
+
+.loader-container {
+    text-align: center;
+}
+
+.loader-logo {
+    margin-bottom: 30px;
+    animation: pulse 2s infinite;
+    
+    img {
+        width: 120px;
+        height: auto;
+        filter: drop-shadow(0 0 20px $color-verde-neon);
+    }
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+        filter: drop-shadow(0 0 20px $color-verde-neon);
+    }
+    50% {
+        transform: scale(1.05);
+        filter: drop-shadow(0 0 30px $color-verde-neon);
+    }
+}
+
+// Engranajes girando
+.gears {
+    position: relative;
+    width: 150px;
+    height: 80px;
+    margin: 0 auto 30px;
+}
+
+.gear {
+    position: absolute;
+    font-size: 50px;
+    color: $color-verde-neon;
+    animation: rotate 3s linear infinite;
+    
+    &.gear-1 {
+        left: 0;
+        top: 0;
+        animation-direction: normal;
+    }
+    
+    &.gear-2 {
+        right: 0;
+        top: 10px;
+        font-size: 40px;
+        animation-direction: reverse;
+        animation-duration: 2.5s;
+    }
+}
+
+@keyframes rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+// Barra de progreso del loader
+.loader-progress {
+    width: 250px;
+    height: 4px;
+    background: $color-gris-claro;
+    border-radius: 10px;
+    overflow: hidden;
+    margin: 0 auto 20px;
+}
+
+.loader-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, $color-verde-neon, $color-verde-oscuro);
+    animation: loading 2s ease-in-out infinite;
+    box-shadow: 0 0 10px $color-verde-neon;
+}
+
+@keyframes loading {
+    0% { width: 0%; }
+    50% { width: 70%; }
+    100% { width: 100%; }
+}
+
+// Texto "Cargando..."
+.loader-text {
+    font-size: 14px;
+    color: $color-gris-texto;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+.loading-dots::after {
+    content: '';
+    animation: dots 1.5s steps(4, end) infinite;
+}
+
+@keyframes dots {
+    0%, 20% { content: ''; }
+    40% { content: '.'; }
+    60% { content: '..'; }
+    80%, 100% { content: '...'; }
+}
+
+// ============================================
+// SIDEBAR LATERAL MODERNO
+// ============================================
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: $sidebar-width;
+    height: 100vh;
+    background: linear-gradient(180deg, $color-gris-oscuro 0%, $color-negro 100%);
+    border-right: 1px solid $color-gris-claro;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.3s ease;
+    overflow-y: auto;
+    
+    // Scrollbar personalizado
+    &::-webkit-scrollbar {
+        width: 6px;
+    }
+    
+    &::-webkit-scrollbar-track {
+        background: $color-negro;
+    }
+    
+    &::-webkit-scrollbar-thumb {
+        background: $color-verde-neon;
+        border-radius: 10px;
+    }
+    
+    &.collapsed {
+        transform: translateX(-$sidebar-width);
+    }
+}
+
+// Header del sidebar
+.sidebar-header {
+    padding: 25px 20px;
+    border-bottom: 1px solid $color-gris-claro;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.sidebar-logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    
+    img {
+        width: 40px;
+        height: auto;
+    }
+}
+
+.sidebar-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: $color-blanco;
+    letter-spacing: 1px;
+}
+
+.sidebar-close {
+    background: none;
+    border: none;
+    color: $color-gris-texto;
+    font-size: 20px;
+    cursor: pointer;
+    transition: color 0.3s ease;
+    display: none;
+    
+    &:hover {
+        color: $color-verde-neon;
+    }
+}
+
+// Navegación
+.sidebar-nav {
+    flex: 1;
+    padding: 20px 0;
+}
+
+.nav-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.nav-item {
+    margin-bottom: 5px;
+}
+
+.nav-link {
+    display: flex;
+    align-items: center;
+    padding: 14px 20px;
+    color: $color-gris-texto;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    position: relative;
+    
+    i {
+        font-size: 20px;
+        min-width: 25px;
+    }
+    
+    span {
+        margin-left: 15px;
+        font-size: 15px;
+        font-weight: 500;
+    }
+    
+    .arrow {
+        margin-left: auto;
+        font-size: 12px;
+        transition: transform 0.3s ease;
+    }
+    
+    &:hover {
+        background: rgba($color-verde-neon, 0.1);
+        color: $color-verde-neon;
+    }
+    
+    &.active {
+        background: linear-gradient(90deg, transparent, rgba($color-verde-neon, 0.2));
+        color: $color-verde-neon;
+        border-left: 3px solid $color-verde-neon;
+        
+        &::before {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 4px;
+            height: 80%;
+            background: $color-verde-neon;
+            border-radius: 10px 0 0 10px;
+        }
+    }
+}
+
+// Submenu
+.has-submenu {
+    &.active {
+        .nav-link .arrow {
+            transform: rotate(180deg);
+        }
+        
+        .submenu {
+            max-height: 500px;
+            opacity: 1;
+        }
+    }
+}
+
+.submenu {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: all 0.3s ease;
+    background: rgba($color-negro, 0.5);
+    
+    li {
+        margin: 0;
+    }
+    
+    a {
+        display: flex;
+        align-items: center;
+        padding: 12px 20px 12px 55px;
+        color: $color-gris-texto;
+        text-decoration: none;
+        font-size: 14px;
+        transition: all 0.3s ease;
+        
+        i {
+            font-size: 16px;
+            margin-right: 10px;
+        }
+        
+        &:hover {
+            background: rgba($color-verde-neon, 0.05);
+            color: $color-verde-neon;
+            padding-left: 60px;
+        }
+    }
+}
+
+// Divisor
+.nav-divider {
+    height: 1px;
+    background: $color-gris-claro;
+    margin: 20px 15px;
+}
+
+// Footer del sidebar
+.sidebar-footer {
+    border-top: 1px solid $color-gris-claro;
+    padding: 20px;
+}
+
+.user-profile {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 15px;
+}
+
+.user-avatar {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    background: $color-verde-neon;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    i {
+        font-size: 28px;
+        color: $color-negro;
+    }
+}
+
+.user-info {
+    flex: 1;
+}
+
+.user-name {
+    font-size: 15px;
+    font-weight: 600;
+    color: $color-blanco;
+}
+
+.user-role {
+    font-size: 12px;
+    color: $color-gris-texto;
+}
+
+.btn-logout {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    padding: 12px;
+    background: rgba($color-verde-neon, 0.1);
+    border: 1px solid $color-verde-neon;
+    border-radius: 8px;
+    color: $color-verde-neon;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    
+    &:hover {
+        background: $color-verde-neon;
+        color: $color-negro;
+    }
+}
+
+// ============================================
+// OVERLAY
+// ============================================
+.sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba($color-negro, 0.7);
+    z-index: 999;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    
+    &.active {
+        opacity: 1;
+        visibility: visible;
+    }
+}
+
+// ============================================
+// TOPBAR
+// ============================================
+.topbar {
+    position: fixed;
+    top: 0;
+    left: $sidebar-width;
+    right: 0;
+    height: $topbar-height;
+    background: $color-gris-oscuro;
+    border-bottom: 1px solid $color-gris-claro;
+    display: flex;
+    align-items: center;
+    padding: 0 30px;
+    z-index: 998;
+    transition: left 0.3s ease;
+    
+    &.full-width {
+        left: 0;
+    }
+}
+
+.sidebar-toggle {
+    background: none;
+    border: none;
+    color: $color-blanco;
+    font-size: 24px;
+    cursor: pointer;
+    margin-right: 20px;
+    transition: color 0.3s ease;
+    
+    &:hover {
+        color: $color-verde-neon;
+    }
+}
+
+.topbar-title {
+    flex: 1;
+    
+    h1 {
+        font-size: 22px;
+        font-weight: 600;
+        color: $color-blanco;
+        margin: 0;
+    }
+}
+
+.topbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.topbar-btn {
+    position: relative;
+    background: none;
+    border: none;
+    color: $color-gris-texto;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 10px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    
+    &:hover {
+        background: rgba($color-verde-neon, 0.1);
+        color: $color-verde-neon;
+    }
+    
+    .badge {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        background: $color-verde-neon;
+        color: $color-negro;
+        font-size: 10px;
+        font-weight: 700;
+        padding: 2px 6px;
+        border-radius: 10px;
+    }
+}
+
+.topbar-user {
+    img {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        border: 2px solid $color-verde-neon;
+        cursor: pointer;
+        transition: transform 0.3s ease;
+        
+        &:hover {
+            transform: scale(1.1);
+        }
+    }
+}
+
+// ============================================
+// CONTENIDO PRINCIPAL
+// ============================================
+.main-content {
+    margin-left: $sidebar-width;
+    margin-top: $topbar-height;
+    padding: 30px;
+    min-height: calc(100vh - #{$topbar-height} - 60px);
+    transition: margin-left 0.3s ease;
+    
+    &.full-width {
+        margin-left: 0;
+    }
+}
+
+// ============================================
+// FOOTER
+// ============================================
+.main-footer {
+    margin-left: $sidebar-width;
+    background: $color-gris-oscuro;
+    border-top: 1px solid $color-gris-claro;
+    padding: 20px 30px;
+    color: $color-gris-texto;
+    font-size: 13px;
+    transition: margin-left 0.3s ease;
+    
+    &.full-width {
+        margin-left: 0;
+    }
+}
+
+// ============================================
+// BARRA DE PROGRESO DE SCROLL
+// ============================================
+.scroll-progress {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: $color-gris-claro;
+    z-index: 9999;
+}
+
+.scroll-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, $color-verde-neon, $color-verde-oscuro);
+    width: 0%;
+    transition: width 0.1s ease;
+    box-shadow: 0 0 10px $color-verde-neon;
+}
+
+// ============================================
+// RESPONSIVE
+// ============================================
+@media (max-width: 991px) {
+    .sidebar {
+        transform: translateX(-$sidebar-width);
+        
+        &.active {
+            transform: translateX(0);
+        }
+    }
+    
+    .sidebar-close {
+        display: block;
+    }
+    
+    .topbar {
+        left: 0;
+    }
+    
+    .main-content,
+    .main-footer {
+        margin-left: 0;
+    }
+}
+
+@media (max-width: 576px) {
+    .sidebar {
+        width: 100%;
+        transform: translateX(-100%);
+    }
+    
+    .topbar {
+        padding: 0 15px;
+    }
+    
+    .topbar-title h1 {
+        font-size: 18px;
+    }
+    
+    .main-content {
+        padding: 15px;
+    }
+}
