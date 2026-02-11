@@ -1,3 +1,4 @@
+import { Dropdown } from "bootstrap";
 import '../scss/app.scss';
 
 document.addEventListener('DOMContentLoaded', (e) => {
@@ -40,7 +41,6 @@ document.onreadystatechange = () => {
 
 
 
-import { Dropdown } from "bootstrap";
 
 // ============================================
 // COMODÍN MOTORS - Sistema de Gestión
@@ -48,6 +48,7 @@ import { Dropdown } from "bootstrap";
 
 class ComodinMotorsApp {
     constructor() {
+        // ⭐ VERIFICAR QUE EXISTAN ANTES DE USAR
         this.sidebar = document.getElementById('sidebar');
         this.sidebarToggle = document.getElementById('sidebarToggle');
         this.sidebarClose = document.getElementById('sidebarClose');
@@ -62,20 +63,21 @@ class ComodinMotorsApp {
         // Ocultar loader cuando la página cargue
         this.initLoader();
 
-        // Inicializar sidebar
-        this.initSidebar();
+        // ⭐ SOLO INICIALIZAR SI EXISTEN LOS ELEMENTOS
+        if (this.sidebar && this.sidebarToggle) {
+            this.initSidebar();
+            this.initSubmenus();
+        }
 
-        // Inicializar submenus
-        this.initSubmenus();
+        if (this.scrollProgressBar) {
+            this.initScrollProgress();
+        }
 
-        // Inicializar scroll progress
-        this.initScrollProgress();
-
-        // Inicializar pantalla completa
         this.initFullscreen();
 
-        // Marcar link activo
-        this.setActiveLink();
+        if (this.sidebar) {
+            this.setActiveLink();
+        }
 
         console.log('🚗 Comodín Motors App Initialized');
     }
