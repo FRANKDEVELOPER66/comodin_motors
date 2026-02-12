@@ -195,6 +195,95 @@ CREATE TABLE configuracion (
     fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+
+-- ============================================
+-- TABLA OPCIONAL: catalogo_servicios
+-- Para autocompletar y sugerir servicios
+-- ============================================
+
+USE comodin_motors;
+
+CREATE TABLE IF NOT EXISTS catalogo_servicios (
+    id_catalogo_servicio INT AUTO_INCREMENT PRIMARY KEY,
+    codigo VARCHAR(50) UNIQUE COMMENT 'Código del servicio (ej: SRV001)',
+    descripcion VARCHAR(500) NOT NULL,
+    precio_sugerido DECIMAL(10,2) NOT NULL,
+    categoria ENUM('mecanica', 'electrica', 'carroceria', 'pintura', 'diagnostico', 'mantenimiento', 'otro') DEFAULT 'otro',
+    activo TINYINT(1) DEFAULT 1,
+    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    
+    INDEX idx_codigo (codigo),
+    INDEX idx_categoria (categoria),
+    INDEX idx_activo (activo),
+    FULLTEXT idx_descripcion (descripcion)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================
+-- DATOS DE EJEMPLO
+-- ============================================
+
+INSERT INTO catalogo_servicios (codigo, descripcion, precio_sugerido, categoria) VALUES
+-- Mantenimiento
+('SRV001', 'Cambio de aceite y filtro', 150.00, 'mantenimiento'),
+('SRV002', 'Cambio de aceite sintético y filtro', 250.00, 'mantenimiento'),
+('SRV003', 'Alineación', 150.00, 'mantenimiento'),
+('SRV004', 'Balanceo de 4 llantas', 100.00, 'mantenimiento'),
+('SRV005', 'Alineación y balanceo completo', 200.00, 'mantenimiento'),
+('SRV006', 'Rotación de llantas', 80.00, 'mantenimiento'),
+
+-- Mecánica
+('SRV010', 'Revisión de frenos', 150.00, 'mecanica'),
+('SRV011', 'Cambio de pastillas de freno delanteras', 400.00, 'mecanica'),
+('SRV012', 'Cambio de pastillas de freno traseras', 350.00, 'mecanica'),
+('SRV013', 'Cambio de discos de freno delanteros', 600.00, 'mecanica'),
+('SRV014', 'Cambio de amortiguadores delanteros (par)', 800.00, 'mecanica'),
+('SRV015', 'Cambio de amortiguadores traseros (par)', 700.00, 'mecanica'),
+('SRV016', 'Cambio de kit de embrague', 1500.00, 'mecanica'),
+('SRV017', 'Reparación de transmisión automática', 3000.00, 'mecanica'),
+('SRV018', 'Reparación de transmisión manual', 2000.00, 'mecanica'),
+('SRV019', 'Cambio de banda de distribución', 1200.00, 'mecanica'),
+('SRV020', 'Limpieza de inyectores', 350.00, 'mecanica'),
+
+-- Eléctrica
+('SRV030', 'Diagnóstico computarizado', 200.00, 'diagnostico'),
+('SRV031', 'Escaneo de códigos de error', 150.00, 'diagnostico'),
+('SRV032', 'Cambio de batería', 350.00, 'electrica'),
+('SRV033', 'Reparación de alternador', 800.00, 'electrica'),
+('SRV034', 'Cambio de alternador', 1200.00, 'electrica'),
+('SRV035', 'Reparación de marcha', 700.00, 'electrica'),
+('SRV036', 'Cambio de marcha', 1000.00, 'electrica'),
+('SRV037', 'Reparación de sistema eléctrico', 500.00, 'electrica'),
+('SRV038', 'Cambio de bujías', 200.00, 'electrica'),
+('SRV039', 'Cambio de cables de bujías', 300.00, 'electrica'),
+
+-- Carrocería y pintura
+('SRV050', 'Reparación de abolladuras pequeñas', 300.00, 'carroceria'),
+('SRV051', 'Reparación de abolladuras medianas', 600.00, 'carroceria'),
+('SRV052', 'Enderezado y pintura de puerta', 1500.00, 'carroceria'),
+('SRV053', 'Enderezado y pintura de guardafango', 1200.00, 'carroceria'),
+('SRV054', 'Pintura completa del vehículo', 5000.00, 'pintura'),
+('SRV055', 'Pintura de capó', 800.00, 'pintura'),
+('SRV056', 'Pulido y encerado completo', 400.00, 'carroceria'),
+('SRV057', 'Lavado detallado exterior e interior', 250.00, 'otro'),
+
+-- Aire acondicionado
+('SRV070', 'Recarga de gas refrigerante', 300.00, 'otro'),
+('SRV071', 'Reparación de compresor A/C', 1500.00, 'mecanica'),
+('SRV072', 'Limpieza de sistema A/C', 250.00, 'mantenimiento'),
+
+-- Otros
+('SRV090', 'Cambio de llantas (4 unidades)', 2000.00, 'otro'),
+('SRV091', 'Reparación de ponchadura', 50.00, 'otro'),
+('SRV092', 'Instalación de sistema de sonido', 500.00, 'otro'),
+('SRV093', 'Instalación de alarma', 400.00, 'otro'),
+('SRV094', 'Polarizado de vidrios', 600.00, 'otro'),
+('SRV095', 'Inspección pre-compra', 300.00, 'diagnostico');
+
+
+
+
+
 -- ============================================
 -- DATOS INICIALES
 -- ============================================

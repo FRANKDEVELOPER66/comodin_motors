@@ -1,4 +1,129 @@
 <style>
+    /* Tabla de servicios */
+    .table-servicios {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        margin-top: 1rem;
+    }
+
+    .table-servicios thead th {
+        background: linear-gradient(135deg, #2d2d2d 0%, #404040 100%);
+        color: white;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        padding: 1rem 0.75rem;
+        border: none;
+        text-align: left;
+    }
+
+    .table-servicios tbody tr {
+        transition: all 0.3s ease;
+        border-bottom: 1px solid #3a3a3a;
+    }
+
+    .table-servicios tbody tr:not(.empty-state):hover {
+        background: rgba(0, 255, 0, 0.05);
+    }
+
+    .table-servicios tbody td {
+        padding: 1rem 0.75rem;
+        vertical-align: middle;
+        color: #fff;
+    }
+
+    .table-servicios tfoot {
+        background: #1a1a1a;
+        border-top: 2px solid #00ff00;
+    }
+
+    .table-servicios tfoot td {
+        padding: 1.5rem 0.75rem;
+        font-size: 1.2rem;
+        color: #00ff00;
+    }
+
+    .table-servicios input[type="number"],
+    .table-servicios input[type="text"] {
+        background: #2a2a2a;
+        border: 1px solid #3a3a3a;
+        color: #fff;
+        padding: 0.5rem;
+        border-radius: 5px;
+        width: 100%;
+    }
+
+    .table-servicios input[type="number"]:focus,
+    .table-servicios input[type="text"]:focus {
+        border-color: #00ff00;
+        outline: none;
+    }
+
+    .btn-eliminar-servicio {
+        background: linear-gradient(135deg, #ff4444, #cc0000);
+        border: none;
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .btn-eliminar-servicio:hover {
+        background: linear-gradient(135deg, #cc0000, #990000);
+        transform: translateY(-2px);
+    }
+
+    /* Autocomplete */
+    .autocomplete-results {
+        position: absolute;
+        z-index: 1000;
+        background: #2a2a2a;
+        border: 2px solid #00ff00;
+        border-radius: 10px;
+        max-height: 300px;
+        overflow-y: auto;
+        width: calc(66.666% - 1rem);
+        margin-top: 0.5rem;
+        display: none;
+    }
+
+    .autocomplete-results.show {
+        display: block;
+    }
+
+    .autocomplete-item {
+        padding: 1rem;
+        cursor: pointer;
+        border-bottom: 1px solid #3a3a3a;
+        transition: all 0.2s ease;
+    }
+
+    .autocomplete-item:last-child {
+        border-bottom: none;
+    }
+
+    .autocomplete-item:hover {
+        background: rgba(0, 255, 0, 0.1);
+    }
+
+    .autocomplete-item .servicio-codigo {
+        color: #00ff00;
+        font-weight: 700;
+        font-size: 0.9rem;
+    }
+
+    .autocomplete-item .servicio-descripcion {
+        color: #fff;
+        margin: 0.25rem 0;
+    }
+
+    .autocomplete-item .servicio-precio {
+        color: #ffc107;
+        font-size: 0.9rem;
+    }
+
     /* Contenedor principal con fondo oscuro */
     .orden-container {
         background: #0a0a0a;
@@ -744,6 +869,64 @@
                         </div>
                     </div>
 
+
+                    <!-- SECCIÓN: SERVICIOS Y MANO DE OBRA -->
+                    <div class="section-card">
+                        <div class="section-header">
+                            <h3>
+                                <i class="bi bi-tools"></i>
+                                Servicios y Repuestos
+                            </h3>
+                        </div>
+
+                        <!-- Búsqueda de servicios -->
+                        <div class="row mb-3">
+                            <div class="col-md-8">
+                                <label class="form-label">
+                                    <i class="bi bi-search"></i> Buscar servicio o agregar manualmente
+                                </label>
+                                <input type="text" id="buscarServicio" class="form-control"
+                                    placeholder="Escriba para buscar en el catálogo o presione Enter para agregar...">
+                                <div id="resultadosServicios" class="autocomplete-results"></div>
+                            </div>
+                            <div class="col-md-4 d-flex align-items-end">
+                                <button type="button" id="btnAgregarServicioManual" class="btn btn-outline-green w-100">
+                                    <i class="bi bi-plus-circle"></i> Agregar Manual
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Tabla de servicios agregados -->
+                        <div class="table-responsive">
+                            <table class="table-servicios">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 5%">#</th>
+                                        <th style="width: 45%">Descripción</th>
+                                        <th style="width: 12%">Cantidad</th>
+                                        <th style="width: 15%">Precio Unit.</th>
+                                        <th style="width: 15%">Subtotal</th>
+                                        <th style="width: 8%">Acción</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tablaServicios">
+                                    <tr class="empty-state">
+                                        <td colspan="6" class="text-center" style="color: #666; padding: 2rem;">
+                                            <i class="bi bi-inbox" style="font-size: 3rem; display: block; margin-bottom: 1rem;"></i>
+                                            No hay servicios agregados
+                                        </td>
+                                    </tr>
+                                </tbody>
+                                <tfoot>
+                                    <tr class="total-row">
+                                        <td colspan="4" class="text-end"><strong>TOTAL:</strong></td>
+                                        <td colspan="2"><strong id="totalServicios">Q 0.00</strong></td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+
                     <!-- SECCIÓN 5: DAÑOS DEL VEHÍCULO -->
                     <div class="section-card">
                         <div class="section-header">
@@ -851,4 +1034,4 @@
     </div> <!-- Fin container-fluid -->
 </div> <!-- Fin orden-container -->
 
-<script src="/comodin_motors/build/js/orden/index.js" type="module"></script>
+<script src="/comodin_motors/build/js/orden/nueva.js" type="module"></script>

@@ -9,6 +9,8 @@ use Model\Vehiculo;
 use Model\InventarioVehiculo;
 use Model\DanoVehiculo;
 use Model\Tecnico;
+use Model\ServicioRealizado;
+use Model\CatalogoServicio;
 use MVC\Router;
 
 class OrdenController
@@ -19,11 +21,12 @@ class OrdenController
     public static function index(Router $router)
     {
         $ordenes = Orden::obtenerOrdenesCompletas();
-        
+
         $router->render('ordenes/index', [
             'ordenes' => $ordenes
         ]);
     }
+
 
     /**
      * Vista - Nueva orden
@@ -31,7 +34,7 @@ class OrdenController
     public static function nueva(Router $router)
     {
         $tecnicos = Tecnico::obtenerActivos();
-        
+
         $router->render('ordenes/nueva', [
             'tecnicos' => $tecnicos
         ]);
@@ -43,14 +46,14 @@ class OrdenController
     public static function ver(Router $router)
     {
         $id_orden = $_GET['id'] ?? null;
-        
+
         if (!$id_orden) {
             header('Location: /ordenes');
             return;
         }
 
         $orden = Orden::obtenerDetalleCompleto($id_orden);
-        
+
         if (!$orden) {
             header('Location: /ordenes');
             return;
@@ -236,7 +239,7 @@ class OrdenController
             if (!empty($_POST['inventario'])) {
                 $inventario_data = $_POST['inventario'];
                 $inventario_data['id_orden'] = $id_orden;
-                
+
                 $inventario = new InventarioVehiculo($inventario_data);
                 $inventario->crear();
             }
@@ -250,6 +253,32 @@ class OrdenController
                 }
             }
 
+            // 5. Guardar servicios realizados
+            if (!empty($_POST['servicios']) && is_string($_POST['servicios'])) {
+                $servicios = json_decode($_POST['servicios'], true);
+
+                if ($servicios && is_array($servicios)) {
+                    foreach ($servicios as $servicio_data) {
+                        $servicio_data['id_orden'] = $id_orden;
+
+                        // Crear objeto ServicioRealizado
+                        $servicio = new ServicioRealizado($servicio_data);
+
+                        // El método crear() calculará automáticamente el subtotal
+                        $servicio->crear();
+                    }
+                }
+            }
+
+            // 6. Actualizar costo_total de la orden
+            if (isset($id_orden)) {
+                $total_servicios = ServicioRealizado::obtenerTotalPorOrden($id_orden);
+
+                $sql = "UPDATE ordenes_servicio SET costo_total = ? WHERE id_orden = ?";
+                $stmt = Orden::getDB()->prepare($sql);
+                $stmt->execute([$total_servicios, $id_orden]);
+            }
+
             // Commit de la transacción
             Orden::getDB()->commit();
 
@@ -260,11 +289,10 @@ class OrdenController
                 'numero_orden' => $numero_orden,
                 'id_orden' => $id_orden
             ], JSON_UNESCAPED_UNICODE);
-
         } catch (Exception $e) {
             // Rollback en caso de error
             Orden::getDB()->rollback();
-            
+
             http_response_code(500);
             echo json_encode([
                 'codigo' => 0,
@@ -283,15 +311,15 @@ class OrdenController
 
         try {
             $filtros = [];
-            
+
             if (!empty($_GET['estado'])) {
                 $filtros['estado'] = $_GET['estado'];
             }
-            
+
             if (!empty($_GET['fecha_desde'])) {
                 $filtros['fecha_desde'] = $_GET['fecha_desde'];
             }
-            
+
             if (!empty($_GET['fecha_hasta'])) {
                 $filtros['fecha_hasta'] = $_GET['fecha_hasta'];
             }
@@ -411,6 +439,42 @@ class OrdenController
             echo json_encode([
                 'codigo' => 0,
                 'mensaje' => 'Error al cambiar estado',
+                'detalle' => $e->getMessage()
+            ], JSON_UNESCAPED_UNICODE);
+        }
+    }
+    /**
+     * API - Buscar servicios en catálogo
+     */
+    public static function buscarServiciosAPI()
+    {
+        header('Content-Type: application/json; charset=UTF-8');
+
+        $termino = $_GET['q'] ?? '';
+
+        if (empty($termino)) {
+            http_response_code(400);
+            echo json_encode([
+                'codigo' => 0,
+                'mensaje' => 'Término de búsqueda no proporcionado'
+            ], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        try {
+            $servicios = CatalogoServicio::buscar($termino);
+
+            http_response_code(200);
+            echo json_encode([
+                'codigo' => 1,
+                'mensaje' => 'Búsqueda exitosa',
+                'datos' => $servicios
+            ], JSON_UNESCAPED_UNICODE);
+        } catch (Exception $e) {
+            http_response_code(500);
+            echo json_encode([
+                'codigo' => 0,
+                'mensaje' => 'Error al buscar servicios',
                 'detalle' => $e->getMessage()
             ], JSON_UNESCAPED_UNICODE);
         }
