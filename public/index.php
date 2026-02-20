@@ -28,6 +28,7 @@ $router->post('/API/orden/guardar', [OrdenController::class, 'guardarOrdenAPI'])
 $router->get('/API/orden/buscar', [OrdenController::class, 'buscarAPI']);
 $router->post('/API/orden/modificar', [OrdenController::class, 'modificarAPI']);
 $router->post('/API/orden/estado', [OrdenController::class, 'cambiarEstadoAPI']);
+$router->get('/API/clientes/buscar', [OrdenController::class, 'buscarClienteAPI']);
 
 
 
