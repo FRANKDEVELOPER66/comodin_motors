@@ -29,10 +29,6 @@ $router->get('/API/orden/buscar', [OrdenController::class, 'buscarAPI']);
 $router->post('/API/orden/modificar', [OrdenController::class, 'modificarAPI']);
 $router->post('/API/orden/estado', [OrdenController::class, 'cambiarEstadoAPI']);
 
-// Órdenes
-$router->get('/orden', [OrdenController::class, 'index']);
-$router->get('/orden/nueva', [OrdenController::class, 'nueva']);  // ← Esta línea
-$router->get('/orden/ver', [OrdenController::class, 'ver']);
 
 
 

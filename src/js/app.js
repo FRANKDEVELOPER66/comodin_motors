@@ -2,9 +2,11 @@ import { Dropdown } from "bootstrap";
 import '../scss/app.scss';
 
 document.addEventListener('DOMContentLoaded', (e) => {
+    // ⭐ VALIDAR QUE EL ELEMENTO EXISTA ANTES DE USARLO
     const dropdown = document.querySelector('.dropdown-menu');
-    dropdown.style.margin = 0;
-
+    if (dropdown) {
+        dropdown.style.margin = 0;
+    }
 
     let items = document.querySelectorAll('.nav-link')
     items.forEach(item => {
@@ -15,32 +17,32 @@ document.addEventListener('DOMContentLoaded', (e) => {
             }
         }
     });
-
-
 })
-
-
 
 document.onreadystatechange = () => {
     switch (document.readyState) {
         case "loading":
-
             break;
         case "interactive":
-            document.getElementById('bar') ? document.getElementById('bar').style.width = '35%' : null;
+            const barInteractive = document.getElementById('bar');
+            if (barInteractive) {
+                barInteractive.style.width = '35%';
+            }
             break;
 
         case "complete":
-            document.getElementById('bar') ? document.getElementById('bar').style.width = '100%' : null;
-            setTimeout(() => {
-                document.getElementById('bar') ? document.getElementById('bar').parentElement.style.display = 'none' : null
-            }, 1000);
+            const barComplete = document.getElementById('bar');
+            if (barComplete) {
+                barComplete.style.width = '100%';
+                setTimeout(() => {
+                    if (barComplete.parentElement) {
+                        barComplete.parentElement.style.display = 'none';
+                    }
+                }, 1000);
+            }
             break;
     }
 }
-
-
-
 
 // ============================================
 // COMODÍN MOTORS - Sistema de Gestión
@@ -60,8 +62,10 @@ class ComodinMotorsApp {
     }
 
     init() {
-        // Ocultar loader cuando la página cargue
-        this.initLoader();
+        // Ocultar loader cuando la página cargue (solo si existe)
+        if (this.loader) {
+            this.initLoader();
+        }
 
         // ⭐ SOLO INICIALIZAR SI EXISTEN LOS ELEMENTOS
         if (this.sidebar && this.sidebarToggle) {
@@ -86,15 +90,15 @@ class ComodinMotorsApp {
     // LOADER
     // ============================================
     initLoader() {
-        // Simular carga (puedes ajustar o quitar esto)
         window.addEventListener('load', () => {
             setTimeout(() => {
-                this.loader.classList.add('hidden');
-                // Remover del DOM después de la animación
-                setTimeout(() => {
-                    this.loader.style.display = 'none';
-                }, 500);
-            }, 1500); // Duración del loader
+                if (this.loader) {
+                    this.loader.classList.add('hidden');
+                    setTimeout(() => {
+                        this.loader.style.display = 'none';
+                    }, 500);
+                }
+            }, 1500);
         });
     }
 
@@ -102,49 +106,48 @@ class ComodinMotorsApp {
     // SIDEBAR
     // ============================================
     initSidebar() {
-        // Toggle sidebar
         if (this.sidebarToggle) {
             this.sidebarToggle.addEventListener('click', () => {
                 this.toggleSidebar();
             });
         }
 
-        // Cerrar sidebar
         if (this.sidebarClose) {
             this.sidebarClose.addEventListener('click', () => {
                 this.closeSidebar();
             });
         }
 
-        // Cerrar con overlay
         if (this.sidebarOverlay) {
             this.sidebarOverlay.addEventListener('click', () => {
                 this.closeSidebar();
             });
         }
 
-        // Cerrar al presionar ESC
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
+            if (e.key === 'Escape' && this.sidebar) {
                 this.closeSidebar();
             }
         });
 
-        // Responsive: cerrar sidebar al cambiar tamaño
         window.addEventListener('resize', () => {
-            if (window.innerWidth > 991) {
+            if (window.innerWidth > 991 && this.sidebar) {
                 this.closeSidebar();
             }
         });
     }
 
     toggleSidebar() {
+        if (!this.sidebar || !this.sidebarOverlay) return;
+
         this.sidebar.classList.toggle('active');
         this.sidebarOverlay.classList.toggle('active');
         document.body.style.overflow = this.sidebar.classList.contains('active') ? 'hidden' : '';
     }
 
     closeSidebar() {
+        if (!this.sidebar || !this.sidebarOverlay) return;
+
         this.sidebar.classList.remove('active');
         this.sidebarOverlay.classList.remove('active');
         document.body.style.overflow = '';
@@ -163,19 +166,16 @@ class ComodinMotorsApp {
                 const parent = item.parentElement;
                 const wasActive = parent.classList.contains('active');
 
-                // Cerrar todos los submenus
                 document.querySelectorAll('.has-submenu').forEach(sub => {
                     sub.classList.remove('active');
                 });
 
-                // Abrir el clickeado (si no estaba activo)
                 if (!wasActive) {
                     parent.classList.add('active');
                 }
             });
         });
 
-        // Mantener submenu abierto si hay un link activo dentro
         document.querySelectorAll('.submenu a').forEach(link => {
             if (link.classList.contains('active')) {
                 link.closest('.has-submenu').classList.add('active');
@@ -234,10 +234,12 @@ class ComodinMotorsApp {
             if (link.getAttribute('href') === currentPath) {
                 link.classList.add('active');
 
-                // Si está en un submenu, abrir el parent
                 const submenu = link.closest('.submenu');
                 if (submenu) {
-                    submenu.closest('.has-submenu').classList.add('active');
+                    const parentSubmenu = submenu.closest('.has-submenu');
+                    if (parentSubmenu) {
+                        parentSubmenu.classList.add('active');
+                    }
                 }
             }
         });
@@ -248,7 +250,6 @@ class ComodinMotorsApp {
 // UTILIDADES ADICIONALES
 // ============================================
 
-// Animación suave al hacer scroll
 function smoothScroll() {
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         anchor.addEventListener('click', function (e) {
@@ -267,15 +268,15 @@ function smoothScroll() {
     });
 }
 
-// Tooltips de Bootstrap
 function initTooltips() {
-    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-    tooltipTriggerList.map(function (tooltipTriggerEl) {
-        return new bootstrap.Tooltip(tooltipTriggerEl);
-    });
+    if (typeof bootstrap !== 'undefined') {
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    }
 }
 
-// Confirmación antes de eliminar
 function confirmDelete() {
     document.querySelectorAll('[data-confirm-delete]').forEach(btn => {
         btn.addEventListener('click', function (e) {
@@ -286,18 +287,18 @@ function confirmDelete() {
     });
 }
 
-// Auto-cerrar alertas
 function autoCloseAlerts() {
-    const alerts = document.querySelectorAll('.alert-auto-close');
-    alerts.forEach(alert => {
-        setTimeout(() => {
-            const bsAlert = new bootstrap.Alert(alert);
-            bsAlert.close();
-        }, 5000);
-    });
+    if (typeof bootstrap !== 'undefined') {
+        const alerts = document.querySelectorAll('.alert-auto-close');
+        alerts.forEach(alert => {
+            setTimeout(() => {
+                const bsAlert = new bootstrap.Alert(alert);
+                bsAlert.close();
+            }, 5000);
+        });
+    }
 }
 
-// Formatear números como moneda
 function formatCurrency(amount, currency = 'GTQ') {
     return new Intl.NumberFormat('es-GT', {
         style: 'currency',
@@ -305,7 +306,6 @@ function formatCurrency(amount, currency = 'GTQ') {
     }).format(amount);
 }
 
-// Formatear fechas
 function formatDate(date, format = 'long') {
     const options = {
         short: { year: 'numeric', month: '2-digit', day: '2-digit' },
@@ -316,20 +316,16 @@ function formatDate(date, format = 'long') {
     return new Intl.DateTimeFormat('es-GT', options[format]).format(new Date(date));
 }
 
-// Copiar al portapapeles
 function copyToClipboard(text) {
     navigator.clipboard.writeText(text).then(() => {
         showToast('Copiado al portapapeles', 'success');
     });
 }
 
-// Mostrar toast notification
 function showToast(message, type = 'info') {
-    // Implementar con tu librería de notificaciones favorita
     console.log(`[${type.toUpperCase()}] ${message}`);
 }
 
-// Validación de formularios en tiempo real
 function initFormValidation() {
     const forms = document.querySelectorAll('.needs-validation');
 
@@ -342,7 +338,6 @@ function initFormValidation() {
             form.classList.add('was-validated');
         });
 
-        // Validación en tiempo real
         const inputs = form.querySelectorAll('input, select, textarea');
         inputs.forEach(input => {
             input.addEventListener('blur', function () {
@@ -358,7 +353,6 @@ function initFormValidation() {
     });
 }
 
-// Búsqueda en tablas
 function initTableSearch(searchInputId, tableId) {
     const searchInput = document.getElementById(searchInputId);
     const table = document.getElementById(tableId);
@@ -376,7 +370,6 @@ function initTableSearch(searchInputId, tableId) {
     }
 }
 
-// Previsualizar imagen antes de subir
 function previewImage(input, previewId) {
     const file = input.files[0];
     const preview = document.getElementById(previewId);
@@ -391,7 +384,6 @@ function previewImage(input, previewId) {
     }
 }
 
-// Contador animado
 function animateCounter(element, target, duration = 2000) {
     let current = 0;
     const increment = target / (duration / 16);
@@ -421,10 +413,8 @@ window.ComodinMotors = {
 // INICIALIZAR APP
 // ============================================
 document.addEventListener('DOMContentLoaded', () => {
-    // Inicializar app principal
     new ComodinMotorsApp();
 
-    // Inicializar utilidades
     smoothScroll();
     initTooltips();
     confirmDelete();

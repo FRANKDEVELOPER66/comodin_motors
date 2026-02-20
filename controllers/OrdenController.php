@@ -22,7 +22,7 @@ class OrdenController
     {
         $ordenes = Orden::obtenerOrdenesCompletas();
 
-        $router->render('ordenes/index', [
+        $router->render('orden/index', [  // ← sin 's'
             'ordenes' => $ordenes
         ]);
     }
@@ -35,8 +35,10 @@ class OrdenController
     {
         $tecnicos = Tecnico::obtenerActivos();
 
-        $router->render('ordenes/nueva', [
-            'tecnicos' => $tecnicos
+        $router->render('orden/nueva', [
+            'tecnicos' => $tecnicos,
+            'script' => 'orden/nueva',
+            'titulo' => 'Nueva Orden'
         ]);
     }
 

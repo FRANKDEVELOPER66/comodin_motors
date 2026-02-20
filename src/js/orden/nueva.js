@@ -1,148 +1,443 @@
 // ============================================
-// GESTIÓN DE SERVICIOS DINÁMICOS
+// NUEVA ORDEN - GESTIÓN COMPLETA
 // ============================================
 
-// Array para almacenar servicios
-let serviciosAgregados = [];
-let servicioCounter = 0;
-
-// Elementos DOM
-const buscarServicio = document.getElementById('buscarServicio');
-const resultadosServicios = document.getElementById('resultadosServicios');
-const tablaServicios = document.getElementById('tablaServicios');
-const totalServicios = document.getElementById('totalServicios');
-const btnAgregarServicioManual = document.getElementById('btnAgregarServicioManual');
+import { Toast, validarFormulario } from "../funciones";
+import Swal from "sweetalert2";
 
 // ============================================
-// BÚSQUEDA DE SERVICIOS (AUTOCOMPLETE)
+// CONFIGURACIÓN GLOBAL
 // ============================================
 
-let timeoutBusqueda = null;
 
-buscarServicio.addEventListener('input', (e) => {
-    const termino = e.target.value.trim();
+// ============================================
+// VARIABLES GLOBALES
+// ============================================
 
-    clearTimeout(timeoutBusqueda);
+let clienteSeleccionado = null;
+let vehiculoSeleccionado = null;
+let danosVehiculo = [];
+let danoCounter = 0;
 
-    if (termino.length < 2) {
-        resultadosServicios.classList.remove('show');
+// ============================================
+// ELEMENTOS DEL DOM
+// ============================================
+
+const elementos = {
+    // Búsqueda de cliente
+    buscarTelefono: document.getElementById('buscar_telefono'),
+    btnBuscarCliente: document.getElementById('btnBuscarCliente'),
+    datosCliente: document.getElementById('datosCliente'),
+    btnNuevoCliente: document.getElementById('btnNuevoCliente'),
+    btnCrearCliente: document.getElementById('btnCrearCliente'),
+
+    // Cliente
+    idCliente: document.getElementById('id_cliente'),
+    clienteNombre: document.getElementById('cliente_nombre'),
+    clienteTelefono: document.getElementById('cliente_telefono'),
+    clienteEmpresa: document.getElementById('cliente_empresa'),
+    clienteDireccion: document.getElementById('cliente_direccion'),
+
+    // Vehículo
+    seccionVehiculo: document.getElementById('seccionVehiculo'),
+    vehiculosExistentes: document.getElementById('vehiculosExistentes'),
+    listaVehiculos: document.getElementById('listaVehiculos'),
+    btnNuevoVehiculo: document.getElementById('btnNuevoVehiculo'),
+    formNuevoVehiculo: document.getElementById('formNuevoVehiculo'),
+    idVehiculo: document.getElementById('id_vehiculo'),
+
+    // Combustible
+    nivelCombustible: document.getElementById('nivel_combustible'),
+    fuelLevel: document.getElementById('fuelLevel'),
+
+    // Daños
+    carCanvas: document.getElementById('carCanvas'),
+    damageList: document.getElementById('damageList'),
+    damageItems: document.getElementById('damageItems'),
+
+    // Resumen
+    resumenCliente: document.getElementById('resumen_cliente'),
+    resumenTelefono: document.getElementById('resumen_telefono'),
+    resumenVehiculo: document.getElementById('resumen_vehiculo'),
+    resumenPlacas: document.getElementById('resumen_placas'),
+    resumenKm: document.getElementById('resumen_km'),
+    resumenCombustible: document.getElementById('resumen_combustible'),
+
+    // Formulario
+    formularioOrden: document.getElementById('formularioOrden')
+};
+
+// ============================================
+// INICIALIZACIÓN
+// ============================================
+
+document.addEventListener('DOMContentLoaded', () => {
+    inicializarEventos();
+    inicializarCanvas();
+    inicializarCombustible();
+
+    console.log('✅ Sistema de Nueva Orden Inicializado');
+});
+
+function inicializarEventos() {
+    // Búsqueda de cliente
+    if (elementos.btnBuscarCliente) {
+        elementos.btnBuscarCliente.addEventListener('click', buscarCliente);
+    }
+
+    if (elementos.buscarTelefono) {
+        elementos.buscarTelefono.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                buscarCliente();
+            }
+        });
+    }
+
+    // Crear cliente nuevo
+    if (elementos.btnCrearCliente) {
+        elementos.btnCrearCliente.addEventListener('click', mostrarFormularioNuevoCliente);
+    }
+
+    // Nuevo vehículo
+    if (elementos.btnNuevoVehiculo) {
+        elementos.btnNuevoVehiculo.addEventListener('click', mostrarFormularioNuevoVehiculo);
+    }
+
+    // Cambios en inputs para actualizar resumen
+    ['cliente_nombre', 'cliente_telefono', 'marca', 'modelo', 'anio', 'placas', 'kilometraje_actual'].forEach(id => {
+        const elem = document.getElementById(id);
+        if (elem) {
+            elem.addEventListener('input', actualizarResumen);
+        }
+    });
+
+    // Envío del formulario
+    if (elementos.formularioOrden) {
+        elementos.formularioOrden.addEventListener('submit', guardarOrden);
+    }
+}
+
+// ============================================
+// BÚSQUEDA Y GESTIÓN DE CLIENTES
+// ============================================
+
+async function buscarCliente() {
+    const telefono = elementos.buscarTelefono.value.trim();
+
+    if (!telefono) {
+        Toast.fire({
+            icon: 'warning',
+            title: 'Ingrese un teléfono'
+        });
         return;
     }
 
-    timeoutBusqueda = setTimeout(() => {
-        buscarEnCatalogo(termino);
-    }, 300);
-});
-
-// Cerrar autocomplete al hacer clic fuera
-document.addEventListener('click', (e) => {
-    if (!e.target.closest('#buscarServicio') && !e.target.closest('#resultadosServicios')) {
-        resultadosServicios.classList.remove('show');
-    }
-});
-
-async function buscarEnCatalogo(termino) {
     try {
-        const url = `/comodin_motors/API/servicios/buscar?q=${encodeURIComponent(termino)}`;
-        const respuesta = await fetch(url);
-        const data = await respuesta.json();
+        const response = await fetch(`/comodin_motors/API/clientes/buscar?telefono=${encodeURIComponent(telefono)}`);
+        const data = await response.json();
 
         if (data.codigo === 1 && data.datos && data.datos.length > 0) {
-            mostrarResultadosBusqueda(data.datos);
+            // Cliente encontrado
+            const cliente = data.datos[0];
+            mostrarDatosCliente(cliente);
+            cargarVehiculosCliente(cliente.id_cliente);
         } else {
-            resultadosServicios.innerHTML = `
-                <div class="autocomplete-item" style="text-align: center; color: #666;">
-                    No se encontraron servicios. Presione "Agregar Manual"
-                </div>
-            `;
-            resultadosServicios.classList.add('show');
+            // Cliente no encontrado
+            mostrarOpcionNuevoCliente(telefono);
         }
     } catch (error) {
-        console.error('Error al buscar servicios:', error);
+        console.error('Error al buscar cliente:', error);
+        Toast.fire({
+            icon: 'error',
+            title: 'Error al buscar cliente'
+        });
     }
 }
 
-function mostrarResultadosBusqueda(servicios) {
-    resultadosServicios.innerHTML = '';
+function mostrarDatosCliente(cliente) {
+    clienteSeleccionado = cliente;
 
-    servicios.forEach(servicio => {
-        const item = document.createElement('div');
-        item.className = 'autocomplete-item';
-        item.innerHTML = `
-            <div class="servicio-codigo">${servicio.codigo}</div>
-            <div class="servicio-descripcion">${servicio.descripcion}</div>
-            <div class="servicio-precio">Q ${parseFloat(servicio.precio_sugerido).toFixed(2)}</div>
-        `;
+    elementos.idCliente.value = cliente.id_cliente;
+    elementos.clienteNombre.value = cliente.nombre;
+    elementos.clienteTelefono.value = cliente.telefono;
+    elementos.clienteEmpresa.value = cliente.empresa || '';
+    elementos.clienteDireccion.value = cliente.direccion || '';
 
-        item.addEventListener('click', () => {
-            agregarServicioDesdeC
+    elementos.datosCliente.style.display = 'block';
+    elementos.btnNuevoCliente.style.display = 'none';
+    elementos.seccionVehiculo.style.display = 'block';
 
-            atalogo(servicio);
-            buscarServicio.value = '';
-            resultadosServicios.classList.remove('show');
-        });
+    // Deshabilitar campos (cliente ya existe)
+    elementos.clienteNombre.readOnly = true;
+    elementos.clienteTelefono.readOnly = true;
 
-        resultadosServicios.appendChild(item);
-    });
-
-    resultadosServicios.classList.add('show');
-}
-
-function agregarServicioDesdeCatalogo(servicio) {
-    const servicioData = {
-        id: ++servicioCounter,
-        descripcion: servicio.descripcion,
-        cantidad: 1,
-        precio_unitario: parseFloat(servicio.precio_sugerido),
-        subtotal: parseFloat(servicio.precio_sugerido),
-        tipo: 'servicio'
-    };
-
-    serviciosAgregados.push(servicioData);
-    renderizarTablaServicios();
-    calcularTotal();
+    actualizarResumen();
 
     Toast.fire({
         icon: 'success',
-        title: 'Servicio agregado',
+        title: 'Cliente encontrado',
         timer: 1500
     });
 }
 
+function mostrarOpcionNuevoCliente(telefono) {
+    elementos.datosCliente.style.display = 'none';
+    elementos.btnNuevoCliente.style.display = 'block';
+
+    Toast.fire({
+        icon: 'info',
+        title: 'Cliente no encontrado'
+    });
+}
+
+function mostrarFormularioNuevoCliente() {
+    const telefono = elementos.buscarTelefono.value.trim();
+
+    elementos.clienteTelefono.value = telefono;
+    elementos.clienteNombre.value = '';
+    elementos.clienteEmpresa.value = '';
+    elementos.clienteDireccion.value = '';
+
+    elementos.datosCliente.style.display = 'block';
+    elementos.btnNuevoCliente.style.display = 'none';
+    elementos.seccionVehiculo.style.display = 'block';
+
+    // Habilitar campos para nuevo cliente
+    elementos.clienteNombre.readOnly = false;
+    elementos.clienteTelefono.readOnly = false;
+    elementos.clienteNombre.focus();
+
+    // Mostrar directamente formulario de nuevo vehículo
+    elementos.vehiculosExistentes.style.display = 'none';
+    elementos.formNuevoVehiculo.style.display = 'block';
+}
+
 // ============================================
-// AGREGAR SERVICIO MANUAL
+// GESTIÓN DE VEHÍCULOS
 // ============================================
 
-btnAgregarServicioManual.addEventListener('click', async () => {
-    const { value: formValues } = await Swal.fire({
-        title: 'Agregar servicio manualmente',
+async function cargarVehiculosCliente(id_cliente) {
+    try {
+        const response = await fetch(`/comodin_motors/API/vehiculos/cliente?id_cliente=${id_cliente}`);
+        const data = await response.json();
+
+        if (data.codigo === 1 && data.datos && data.datos.length > 0) {
+            mostrarVehiculosExistentes(data.datos);
+        } else {
+            mostrarFormularioNuevoVehiculo();
+        }
+    } catch (error) {
+        console.error('Error al cargar vehículos:', error);
+        mostrarFormularioNuevoVehiculo();
+    }
+}
+
+function mostrarVehiculosExistentes(vehiculos) {
+    elementos.listaVehiculos.innerHTML = '';
+
+    vehiculos.forEach(vehiculo => {
+        const card = document.createElement('div');
+        card.className = 'col-md-6';
+        card.innerHTML = `
+            <div class="vehicle-card" data-vehiculo-id="${vehiculo.id_vehiculo}">
+                <h5 class="text-white mb-2">
+                    <i class="bi bi-car-front text-green"></i>
+                    ${vehiculo.marca} ${vehiculo.modelo}
+                </h5>
+                <div class="text-muted">
+                    <small>
+                        <i class="bi bi-calendar3"></i> ${vehiculo.anio} |
+                        <i class="bi bi-palette"></i> ${vehiculo.color} |
+                        <i class="bi bi-credit-card"></i> ${vehiculo.placas}
+                    </small>
+                </div>
+            </div>
+        `;
+
+        card.querySelector('.vehicle-card').addEventListener('click', () => {
+            seleccionarVehiculo(vehiculo, card.querySelector('.vehicle-card'));
+        });
+
+        elementos.listaVehiculos.appendChild(card);
+    });
+
+    elementos.vehiculosExistentes.style.display = 'block';
+    elementos.formNuevoVehiculo.style.display = 'none';
+}
+
+function seleccionarVehiculo(vehiculo, cardElement) {
+    vehiculoSeleccionado = vehiculo;
+
+    // Marcar visualmente
+    document.querySelectorAll('.vehicle-card').forEach(card => {
+        card.classList.remove('selected');
+    });
+    cardElement.classList.add('selected');
+
+    // Llenar datos ocultos
+    elementos.idVehiculo.value = vehiculo.id_vehiculo;
+    document.getElementById('marca').value = vehiculo.marca;
+    document.getElementById('modelo').value = vehiculo.modelo;
+    document.getElementById('anio').value = vehiculo.anio;
+    document.getElementById('color').value = vehiculo.color;
+    document.getElementById('placas').value = vehiculo.placas;
+    document.getElementById('numero_serie').value = vehiculo.numero_serie || '';
+
+    actualizarResumen();
+
+    Toast.fire({
+        icon: 'success',
+        title: 'Vehículo seleccionado',
+        timer: 1500
+    });
+}
+
+function mostrarFormularioNuevoVehiculo() {
+    elementos.vehiculosExistentes.style.display = 'none';
+    elementos.formNuevoVehiculo.style.display = 'block';
+
+    // Limpiar formulario
+    elementos.idVehiculo.value = '';
+    document.getElementById('marca').value = '';
+    document.getElementById('modelo').value = '';
+    document.getElementById('anio').value = '';
+    document.getElementById('color').value = '';
+    document.getElementById('placas').value = '';
+    document.getElementById('numero_serie').value = '';
+}
+
+// ============================================
+// NIVEL DE COMBUSTIBLE
+// ============================================
+
+function inicializarCombustible() {
+    if (elementos.nivelCombustible) {
+        elementos.nivelCombustible.addEventListener('change', actualizarIndicadorCombustible);
+        actualizarIndicadorCombustible();
+    }
+}
+
+function actualizarIndicadorCombustible() {
+    const nivel = elementos.nivelCombustible.value;
+    const porcentajes = {
+        'E': 0,
+        '1/4': 25,
+        '1/2': 50,
+        '3/4': 75,
+        'F': 100
+    };
+
+    if (elementos.fuelLevel) {
+        elementos.fuelLevel.style.width = `${porcentajes[nivel] || 50}%`;
+    }
+
+    if (elementos.resumenCombustible) {
+        elementos.resumenCombustible.textContent = nivel;
+    }
+}
+
+// ============================================
+// CANVAS DE DAÑOS DEL VEHÍCULO
+// ============================================
+
+function inicializarCanvas() {
+    if (!elementos.carCanvas) return;
+
+    const ctx = elementos.carCanvas.getContext('2d');
+    dibujarVehiculo(ctx);
+
+    elementos.carCanvas.addEventListener('click', agregarDanoEnCanvas);
+}
+
+function dibujarVehiculo(ctx) {
+    const canvas = elementos.carCanvas;
+    const width = canvas.width;
+    const height = canvas.height;
+
+    ctx.clearRect(0, 0, width, height);
+
+    // Fondo
+    ctx.fillStyle = '#2a2a2a';
+    ctx.fillRect(0, 0, width, height);
+
+    // Dibujar silueta simple de vehículo (vista superior)
+    ctx.strokeStyle = '#00ff00';
+    ctx.lineWidth = 3;
+
+    // Carrocería principal
+    ctx.beginPath();
+    ctx.roundRect(200, 100, 400, 300, 20);
+    ctx.stroke();
+
+    // Parabrisas delantero
+    ctx.beginPath();
+    ctx.moveTo(250, 100);
+    ctx.lineTo(300, 150);
+    ctx.lineTo(500, 150);
+    ctx.lineTo(550, 100);
+    ctx.stroke();
+
+    // Parabrisas trasero
+    ctx.beginPath();
+    ctx.moveTo(250, 400);
+    ctx.lineTo(300, 350);
+    ctx.lineTo(500, 350);
+    ctx.lineTo(550, 400);
+    ctx.stroke();
+
+    // Ruedas
+    ctx.fillStyle = '#1a1a1a';
+    ctx.fillRect(180, 120, 30, 80); // Rueda delantera izq
+    ctx.fillRect(590, 120, 30, 80); // Rueda delantera der
+    ctx.fillRect(180, 300, 30, 80); // Rueda trasera izq
+    ctx.fillRect(590, 300, 30, 80); // Rueda trasera der
+
+    // Etiquetas
+    ctx.fillStyle = '#00ff00';
+    ctx.font = '14px Arial';
+    ctx.fillText('FRENTE', 360, 80);
+    ctx.fillText('ATRÁS', 360, 440);
+
+    // Redibujar daños existentes
+    danosVehiculo.forEach(dano => {
+        dibujarMarcaDano(ctx, dano.x, dano.y);
+    });
+}
+
+function dibujarMarcaDano(ctx, x, y) {
+    ctx.fillStyle = '#ff4444';
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 2;
+
+    ctx.beginPath();
+    ctx.arc(x, y, 12, 0, 2 * Math.PI);
+    ctx.fill();
+    ctx.stroke();
+}
+
+function agregarDanoEnCanvas(e) {
+    const rect = elementos.carCanvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    Swal.fire({
+        title: 'Registrar daño',
         html: `
-            <div class="mb-3 text-start">
-                <label class="form-label" style="color: #b0b0b0;">Descripción del servicio</label>
-                <textarea id="swal-descripcion" class="swal2-input" rows="3" 
+            <div class="text-start">
+                <label class="form-label">Descripción del daño:</label>
+                <textarea id="dano-descripcion" class="swal2-input" rows="3" 
                     style="height: auto; background: #2a2a2a; border: 1px solid #3a3a3a; color: #fff;"
-                    placeholder="Ejemplo: Cambio de aceite sintético"></textarea>
-            </div>
-            <div class="row">
-                <div class="col-6 mb-3 text-start">
-                    <label class="form-label" style="color: #b0b0b0;">Cantidad</label>
-                    <input id="swal-cantidad" type="number" class="swal2-input" value="1" min="0.01" step="0.01"
-                        style="background: #2a2a2a; border: 1px solid #3a3a3a; color: #fff;">
-                </div>
-                <div class="col-6 mb-3 text-start">
-                    <label class="form-label" style="color: #b0b0b0;">Precio unitario</label>
-                    <input id="swal-precio" type="number" class="swal2-input" min="0.01" step="0.01"
-                        style="background: #2a2a2a; border: 1px solid #3a3a3a; color: #fff;"
-                        placeholder="0.00">
-                </div>
-            </div>
-            <div class="mb-3 text-start">
-                <label class="form-label" style="color: #b0b0b0;">Tipo</label>
-                <select id="swal-tipo" class="swal2-select" 
+                    placeholder="Ej: Rayón en puerta lateral izquierda"></textarea>
+                
+                <label class="form-label mt-3">Tipo de daño:</label>
+                <select id="dano-tipo" class="swal2-select" 
                     style="background: #2a2a2a; border: 1px solid #3a3a3a; color: #fff;">
-                    <option value="servicio">Servicio</option>
-                    <option value="repuesto">Repuesto</option>
-                    <option value="mano_obra">Mano de Obra</option>
+                    <option value="rayón">Rayón</option>
+                    <option value="abolladura">Abolladura</option>
+                    <option value="cristal_roto">Cristal roto</option>
+                    <option value="faltante">Faltante</option>
+                    <option value="otro">Otro</option>
                 </select>
             </div>
         `,
@@ -153,172 +448,189 @@ btnAgregarServicioManual.addEventListener('click', async () => {
         background: '#1a1a1a',
         color: '#fff',
         preConfirm: () => {
-            const descripcion = document.getElementById('swal-descripcion').value.trim();
-            const cantidad = parseFloat(document.getElementById('swal-cantidad').value);
-            const precio = parseFloat(document.getElementById('swal-precio').value);
-            const tipo = document.getElementById('swal-tipo').value;
+            const descripcion = document.getElementById('dano-descripcion').value.trim();
+            const tipo = document.getElementById('dano-tipo').value;
 
             if (!descripcion) {
                 Swal.showValidationMessage('La descripción es requerida');
                 return false;
             }
-            if (!cantidad || cantidad <= 0) {
-                Swal.showValidationMessage('La cantidad debe ser mayor a 0');
-                return false;
-            }
-            if (!precio || precio <= 0) {
-                Swal.showValidationMessage('El precio debe ser mayor a 0');
-                return false;
-            }
 
-            return { descripcion, cantidad, precio, tipo };
+            return { descripcion, tipo };
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            const dano = {
+                id: ++danoCounter,
+                x: x,
+                y: y,
+                descripcion: result.value.descripcion,
+                tipo: result.value.tipo,
+                ubicacion: determinarUbicacion(x, y)
+            };
+
+            danosVehiculo.push(dano);
+
+            const ctx = elementos.carCanvas.getContext('2d');
+            dibujarVehiculo(ctx);
+
+            actualizarListaDanos();
+
+            Toast.fire({
+                icon: 'success',
+                title: 'Daño registrado'
+            });
         }
     });
+}
 
-    if (formValues) {
-        const servicioData = {
-            id: ++servicioCounter,
-            descripcion: formValues.descripcion,
-            cantidad: formValues.cantidad,
-            precio_unitario: formValues.precio,
-            subtotal: formValues.cantidad * formValues.precio,
-            tipo: formValues.tipo
-        };
+function determinarUbicacion(x, y) {
+    // Determinar ubicación aproximada basada en coordenadas
+    if (y < 200) return 'frontal';
+    if (y > 350) return 'trasero';
+    if (x < 400) return 'lateral_izquierdo';
+    return 'lateral_derecho';
+}
 
-        serviciosAgregados.push(servicioData);
-        renderizarTablaServicios();
-        calcularTotal();
-
-        Toast.fire({
-            icon: 'success',
-            title: 'Servicio agregado correctamente'
-        });
-    }
-});
-
-// ============================================
-// RENDERIZAR TABLA
-// ============================================
-
-function renderizarTablaServicios() {
-    if (serviciosAgregados.length === 0) {
-        tablaServicios.innerHTML = `
-            <tr class="empty-state">
-                <td colspan="6" class="text-center" style="color: #666; padding: 2rem;">
-                    <i class="bi bi-inbox" style="font-size: 3rem; display: block; margin-bottom: 1rem;"></i>
-                    No hay servicios agregados
-                </td>
-            </tr>
-        `;
+function actualizarListaDanos() {
+    if (danosVehiculo.length === 0) {
+        elementos.damageList.style.display = 'none';
         return;
     }
 
-    tablaServicios.innerHTML = '';
+    elementos.damageList.style.display = 'block';
+    elementos.damageItems.innerHTML = '';
 
-    serviciosAgregados.forEach((servicio, index) => {
-        const fila = document.createElement('tr');
-        fila.innerHTML = `
-            <td>${index + 1}</td>
-            <td>
-                <input type="text" class="form-control-sm" value="${servicio.descripcion}" 
-                    onchange="actualizarDescripcionServicio(${servicio.id}, this.value)" 
-                    style="background: #2a2a2a; border: 1px solid #3a3a3a; color: #fff; width: 100%; padding: 0.5rem;">
-            </td>
-            <td>
-                <input type="number" class="form-control-sm" value="${servicio.cantidad}" 
-                    min="0.01" step="0.01"
-                    onchange="actualizarCantidadServicio(${servicio.id}, this.value)"
-                    style="background: #2a2a2a; border: 1px solid #3a3a3a; color: #fff; width: 100%; padding: 0.5rem;">
-            </td>
-            <td>
-                <input type="number" class="form-control-sm" value="${servicio.precio_unitario}" 
-                    min="0.01" step="0.01"
-                    onchange="actualizarPrecioServicio(${servicio.id}, this.value)"
-                    style="background: #2a2a2a; border: 1px solid #3a3a3a; color: #fff; width: 100%; padding: 0.5rem;">
-            </td>
-            <td style="color: #00ff00; font-weight: 700;">
-                Q ${servicio.subtotal.toFixed(2)}
-            </td>
-            <td>
-                <button type="button" class="btn-eliminar-servicio" onclick="eliminarServicio(${servicio.id})">
-                    <i class="bi bi-trash"></i>
-                </button>
-            </td>
+    danosVehiculo.forEach(dano => {
+        const item = document.createElement('div');
+        item.className = 'damage-item';
+        item.innerHTML = `
+            <div class="damage-info">
+                <span class="damage-badge">${dano.tipo}</span>
+                <strong>${dano.descripcion}</strong>
+                <small class="text-muted d-block">${dano.ubicacion}</small>
+            </div>
+            <button type="button" class="btn btn-sm btn-danger" onclick="eliminarDano(${dano.id})">
+                <i class="bi bi-trash"></i>
+            </button>
         `;
-        tablaServicios.appendChild(fila);
+        elementos.damageItems.appendChild(item);
     });
 }
 
-// ============================================
-// ACTUALIZAR SERVICIOS
-// ============================================
+window.eliminarDano = (id) => {
+    danosVehiculo = danosVehiculo.filter(d => d.id !== id);
 
-window.actualizarDescripcionServicio = (id, nuevaDescripcion) => {
-    const servicio = serviciosAgregados.find(s => s.id === id);
-    if (servicio) {
-        servicio.descripcion = nuevaDescripcion;
-    }
-};
+    const ctx = elementos.carCanvas.getContext('2d');
+    dibujarVehiculo(ctx);
 
-window.actualizarCantidadServicio = (id, nuevaCantidad) => {
-    const servicio = serviciosAgregados.find(s => s.id === id);
-    if (servicio) {
-        servicio.cantidad = parseFloat(nuevaCantidad) || 1;
-        servicio.subtotal = servicio.cantidad * servicio.precio_unitario;
-        renderizarTablaServicios();
-        calcularTotal();
-    }
-};
-
-window.actualizarPrecioServicio = (id, nuevoPrecio) => {
-    const servicio = serviciosAgregados.find(s => s.id === id);
-    if (servicio) {
-        servicio.precio_unitario = parseFloat(nuevoPrecio) || 0;
-        servicio.subtotal = servicio.cantidad * servicio.precio_unitario;
-        renderizarTablaServicios();
-        calcularTotal();
-    }
-};
-
-window.eliminarServicio = (id) => {
-    serviciosAgregados = serviciosAgregados.filter(s => s.id !== id);
-    renderizarTablaServicios();
-    calcularTotal();
+    actualizarListaDanos();
 
     Toast.fire({
         icon: 'info',
-        title: 'Servicio eliminado',
-        timer: 1500
+        title: 'Daño eliminado'
     });
 };
 
 // ============================================
-// CALCULAR TOTAL
+// ACTUALIZAR RESUMEN
 // ============================================
 
-function calcularTotal() {
-    const total = serviciosAgregados.reduce((sum, servicio) => sum + servicio.subtotal, 0);
-    totalServicios.textContent = `Q ${total.toFixed(2)}`;
+function actualizarResumen() {
+    if (elementos.resumenCliente) {
+        elementos.resumenCliente.textContent = elementos.clienteNombre.value || '-';
+    }
 
-    // Actualizar el costo_total del formulario
-    const inputCostoTotal = document.getElementById('costo_total');
-    if (inputCostoTotal) {
-        inputCostoTotal.value = total.toFixed(2);
+    if (elementos.resumenTelefono) {
+        elementos.resumenTelefono.textContent = elementos.clienteTelefono.value || '-';
+    }
+
+    const marca = document.getElementById('marca')?.value || '';
+    const modelo = document.getElementById('modelo')?.value || '';
+    const anio = document.getElementById('anio')?.value || '';
+
+    if (elementos.resumenVehiculo) {
+        elementos.resumenVehiculo.textContent = marca && modelo ? `${marca} ${modelo} ${anio}` : '-';
+    }
+
+    if (elementos.resumenPlacas) {
+        elementos.resumenPlacas.textContent = document.getElementById('placas')?.value || '-';
+    }
+
+    if (elementos.resumenKm) {
+        const km = document.getElementById('kilometraje_actual')?.value;
+        elementos.resumenKm.textContent = km ? `${parseInt(km).toLocaleString()} km` : '-';
     }
 }
 
 // ============================================
-// OBTENER SERVICIOS PARA ENVIAR AL SERVIDOR
+// GUARDAR ORDEN
 // ============================================
 
-function obtenerServiciosParaGuardar() {
-    return serviciosAgregados.map(servicio => ({
-        descripcion: servicio.descripcion,
-        cantidad: servicio.cantidad,
-        precio_unitario: servicio.precio_unitario,
-        subtotal: servicio.subtotal,
-        tipo: servicio.tipo
-    }));
+async function guardarOrden(e) {
+    e.preventDefault();
+
+    const formData = new FormData(elementos.formularioOrden);
+
+    // Agregar servicios
+    const servicios = obtenerServiciosParaGuardar();
+    formData.append('servicios', JSON.stringify(servicios));
+
+    // Agregar daños
+    formData.append('danos', JSON.stringify(danosVehiculo.map(d => ({
+        descripcion: d.descripcion,
+        tipo_dano: d.tipo,
+        ubicacion: d.ubicacion,
+        coordenada_x: d.x,
+        coordenada_y: d.y
+    }))));
+
+    // Mostrar loading
+    Swal.fire({
+        title: 'Guardando orden...',
+        text: 'Por favor espere',
+        allowOutsideClick: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+
+    try {
+        const response = await fetch('/comodin_motors/API/ordenes/guardar', {
+            method: 'POST',
+            body: formData
+        });
+
+        const data = await response.json();
+
+        if (data.codigo === 1) {
+            Swal.fire({
+                icon: 'success',
+                title: '¡Orden creada!',
+                html: `
+                    <p>Número de orden: <strong class="text-success">${data.numero_orden}</strong></p>
+                    <p>La orden se ha guardado exitosamente</p>
+                `,
+                confirmButtonColor: '#00ff00',
+                background: '#1a1a1a',
+                color: '#fff'
+            }).then(() => {
+                window.location.href = `/comodin_motors/ordenes/ver?id=${data.id_orden}`;
+            });
+        } else {
+            throw new Error(data.mensaje || 'Error al guardar');
+        }
+    } catch (error) {
+        console.error('Error al guardar orden:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'No se pudo guardar la orden. Por favor intente nuevamente.',
+            confirmButtonColor: '#ff4444',
+            background: '#1a1a1a',
+            color: '#fff'
+        });
+    }
 }
 
-console.log('✅ Sistema de servicios dinámicos cargado');
+console.log('✅ Script nueva.js cargado correctamente');

@@ -202,7 +202,7 @@
         </button>
 
         <div class="topbar-title">
-            <h1>Dashboard</h1>
+            <h1><?= $titulo ?? 'Dashboard' ?></h1>
         </div>
 
         <div class="topbar-actions">
@@ -260,6 +260,9 @@
     </div>
 
     <script src="<?= asset('build/js/app.js') ?>"></script>
+    <?php if (isset($script)): ?>
+        <script src="<?= asset('build/js/' . $script . '.js') ?>"></script>
+    <?php endif; ?>
 </body>
 
 </html>

@@ -1,3 +1,6 @@
+
+<?php echo "PRUEBA - LA VISTA CARGA"; ?>
+
 <style>
     /* Tabla de servicios */
     .table-servicios {
@@ -1033,5 +1036,3 @@
 
     </div> <!-- Fin container-fluid -->
 </div> <!-- Fin orden-container -->
-
-<script src="/comodin_motors/build/js/orden/nueva.js" type="module"></script>
