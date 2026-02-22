@@ -60,13 +60,13 @@ class Orden extends ActiveRecord
      */
     public static function generarNumeroOrden()
     {
-        $sql = "CALL sp_generar_numero_orden(@numero)";
-        self::$db->query($sql);
+        $db = self::$db;
 
-        $resultado = self::$db->query("SELECT @numero as numero_orden");
-        $fila = $resultado->fetch_assoc();
+        $stmt = $db->query("SELECT COUNT(*) as total FROM ordenes_servicio");
+        $row = $stmt->fetch(\PDO::FETCH_ASSOC);
+        $siguiente = ($row['total'] ?? 0) + 1;
 
-        return $fila['numero_orden'];
+        return str_pad($siguiente, 6, '0', STR_PAD_LEFT);
     }
 
     /**

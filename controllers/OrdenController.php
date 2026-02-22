@@ -220,13 +220,37 @@ class OrdenController
     {
         header('Content-Type: application/json; charset=UTF-8');
 
-        // Sanitizar datos
-        $_POST['trabajo_realizar'] = htmlspecialchars($_POST['trabajo_realizar']);
+        // DEBUG TEMPORAL
+        if (empty($_POST['id_cliente'])) {
+            echo json_encode([
+                'codigo' => 0,
+                'mensaje' => 'Debug POST',
+                'detalle' => $_POST
+            ], JSON_UNESCAPED_UNICODE);
+            exit;
+        }
+
+        $_POST['trabajo_realizar'] = htmlspecialchars($_POST['trabajo_realizar'] ?? '');
         $_POST['observaciones'] = htmlspecialchars($_POST['observaciones'] ?? '');
 
         try {
-            // Iniciar transacción
             Orden::getDB()->beginTransaction();
+
+            // 0. Si no hay id_vehiculo, crear el vehículo primero
+            if (empty($_POST['id_vehiculo'])) {
+                $vehiculo = new Vehiculo();
+                $vehiculo->id_cliente = $_POST['id_cliente'];
+                $vehiculo->marca = $_POST['marca'];
+                $vehiculo->modelo = $_POST['modelo'];
+                $vehiculo->anio = $_POST['anio'];
+                $vehiculo->color = $_POST['color'];
+                $vehiculo->placas = $_POST['placas'];
+                $vehiculo->numero_serie = $_POST['numero_serie'] ?? '';
+                $vehiculo->kilometraje_inicial = $_POST['kilometraje_actual'] ?? 0;
+
+                $resV = $vehiculo->guardar();
+                $_POST['id_vehiculo'] = $resV['id'];
+            }
 
             // 1. Generar número de orden
             $numero_orden = Orden::generarNumeroOrden();
@@ -237,51 +261,39 @@ class OrdenController
             $resultado_orden = $orden->crear();
             $id_orden = $resultado_orden['id'];
 
-            // 3. Guardar inventario del vehículo
+            // 3. Guardar inventario
             if (!empty($_POST['inventario'])) {
                 $inventario_data = $_POST['inventario'];
                 $inventario_data['id_orden'] = $id_orden;
-
                 $inventario = new InventarioVehiculo($inventario_data);
                 $inventario->crear();
             }
 
-            // 4. Guardar daños del vehículo
-            if (!empty($_POST['danos']) && is_array($_POST['danos'])) {
-                foreach ($_POST['danos'] as $dano_data) {
+            // 4. Guardar daños
+            $danos = json_decode($_POST['danos'] ?? '[]', true);
+            if (!empty($danos) && is_array($danos)) {
+                foreach ($danos as $dano_data) {
                     $dano_data['id_orden'] = $id_orden;
                     $dano = new DanoVehiculo($dano_data);
                     $dano->crear();
                 }
             }
 
-            // 5. Guardar servicios realizados
-            if (!empty($_POST['servicios']) && is_string($_POST['servicios'])) {
-                $servicios = json_decode($_POST['servicios'], true);
-
-                if ($servicios && is_array($servicios)) {
-                    foreach ($servicios as $servicio_data) {
-                        $servicio_data['id_orden'] = $id_orden;
-
-                        // Crear objeto ServicioRealizado
-                        $servicio = new ServicioRealizado($servicio_data);
-
-                        // El método crear() calculará automáticamente el subtotal
-                        $servicio->crear();
-                    }
+            // 5. Guardar servicios
+            $servicios = json_decode($_POST['servicios'] ?? '[]', true);
+            if (!empty($servicios) && is_array($servicios)) {
+                foreach ($servicios as $servicio_data) {
+                    $servicio_data['id_orden'] = $id_orden;
+                    $servicio = new ServicioRealizado($servicio_data);
+                    $servicio->crear();
                 }
             }
 
-            // 6. Actualizar costo_total de la orden
-            if (isset($id_orden)) {
-                $total_servicios = ServicioRealizado::obtenerTotalPorOrden($id_orden);
+            // 6. Actualizar costo_total
+            $total_servicios = ServicioRealizado::obtenerTotalPorOrden($id_orden);
+            $stmt = Orden::getDB()->prepare("UPDATE ordenes_servicio SET costo_total = ? WHERE id_orden = ?");
+            $stmt->execute([$total_servicios, $id_orden]);
 
-                $sql = "UPDATE ordenes_servicio SET costo_total = ? WHERE id_orden = ?";
-                $stmt = Orden::getDB()->prepare($sql);
-                $stmt->execute([$total_servicios, $id_orden]);
-            }
-
-            // Commit de la transacción
             Orden::getDB()->commit();
 
             http_response_code(200);
@@ -292,9 +304,7 @@ class OrdenController
                 'id_orden' => $id_orden
             ], JSON_UNESCAPED_UNICODE);
         } catch (Exception $e) {
-            // Rollback en caso de error
             Orden::getDB()->rollback();
-
             http_response_code(500);
             echo json_encode([
                 'codigo' => 0,

@@ -1,4 +1,3 @@
-
 <?php echo "PRUEBA - LA VISTA CARGA"; ?>
 
 <style>
@@ -522,7 +521,7 @@
                                 <i class="bi bi-file-earmark-plus text-green"></i>
                                 Nueva Orden de Servicio
                             </h2>
-                            <p class="text-muted mb-0 mt-2">Complete los datos del vehículo y servicio</p>
+                            <p class="text mb-0 mt-2">Complete los datos del vehículo y servicio</p>
                         </div>
                         <div class="text-end">
                             <span class="badge-nuevo">
@@ -536,6 +535,9 @@
         </div>
 
         <form id="formularioOrden">
+            <!-- Hidden fields siempre presentes -->
+            <input type="hidden" name="id_cliente" id="id_cliente">
+            <input type="hidden" name="id_vehiculo" id="id_vehiculo">
             <div class="row">
                 <!-- Columna izquierda - Formulario -->
                 <div class="col-lg-8">
@@ -567,7 +569,6 @@
 
                         <!-- Datos del cliente encontrado/nuevo -->
                         <div id="datosCliente" style="display:none;">
-                            <input type="hidden" name="id_cliente" id="id_cliente">
 
                             <div class="row">
                                 <div class="col-md-6 mb-3">
@@ -633,7 +634,6 @@
 
                         <!-- Formulario de nuevo vehículo -->
                         <div id="formNuevoVehiculo" style="display:none;">
-                            <input type="hidden" name="id_vehiculo" id="id_vehiculo">
 
                             <div class="row">
                                 <div class="col-md-4 mb-3">
@@ -1019,7 +1019,7 @@
                             <button type="submit" class="btn btn-green w-100" id="btnGuardarOrden">
                                 <i class="bi bi-save-fill"></i> Guardar Orden
                             </button>
-                            <a href="/comodin_motors/ordenes" class="btn btn-outline-green w-100 mt-2">
+                            <a href="/comodin_motors/dashboard" class="btn btn-outline-green w-100 mt-2">
                                 <i class="bi bi-x-circle"></i> Cancelar
                             </a>
                         </div>

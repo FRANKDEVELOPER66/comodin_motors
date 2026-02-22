@@ -206,52 +206,52 @@ class ActiveRecord
     }
 
     /**
- * Ejecutar query con parámetros preparados y retornar array
- */
-public static function fetchArray($query, $params = [])
-{
-    if (empty($params)) {
-        // Si no hay parámetros, usar el método original
-        $resultado = self::$db->query($query);
-    } else {
-        // Si hay parámetros, usar prepared statement
-        $stmt = self::$db->prepare($query);
-        $stmt->execute($params);
-        $resultado = $stmt;
-    }
-    
-    $respuesta = $resultado->fetchAll(PDO::FETCH_ASSOC);
-    $data = [];
-    foreach ($respuesta as $value) {
-        $data[] = array_change_key_case(array_map('utf8_encode', $value));
-    }
-    $resultado->closeCursor();
-    return $data;
-}
+     * Ejecutar query con parámetros preparados y retornar array
+     */
+    public static function fetchArray($query, $params = [])
+    {
+        if (empty($params)) {
+            // Si no hay parámetros, usar el método original
+            $resultado = self::$db->query($query);
+        } else {
+            // Si hay parámetros, usar prepared statement
+            $stmt = self::$db->prepare($query);
+            $stmt->execute($params);
+            $resultado = $stmt;
+        }
 
-/**
- * Ejecutar query con parámetros preparados y retornar primer resultado
- */
-public static function fetchFirst($query, $params = [])
-{
-    if (empty($params)) {
-        // Si no hay parámetros, usar el método original
-        $resultado = self::$db->query($query);
-    } else {
-        // Si hay parámetros, usar prepared statement
-        $stmt = self::$db->prepare($query);
-        $stmt->execute($params);
-        $resultado = $stmt;
+        $respuesta = $resultado->fetchAll(PDO::FETCH_ASSOC);
+        $data = [];
+        foreach ($respuesta as $value) {
+            $data[] = array_change_key_case($value);
+        }
+        $resultado->closeCursor();
+        return $data;
     }
-    
-    $respuesta = $resultado->fetchAll(PDO::FETCH_ASSOC);
-    $data = [];
-    foreach ($respuesta as $value) {
-        $data[] = array_change_key_case(array_map('utf8_encode', $value));
+
+    /**
+     * Ejecutar query con parámetros preparados y retornar primer resultado
+     */
+    public static function fetchFirst($query, $params = [])
+    {
+        if (empty($params)) {
+            // Si no hay parámetros, usar el método original
+            $resultado = self::$db->query($query);
+        } else {
+            // Si hay parámetros, usar prepared statement
+            $stmt = self::$db->prepare($query);
+            $stmt->execute($params);
+            $resultado = $stmt;
+        }
+
+        $respuesta = $resultado->fetchAll(PDO::FETCH_ASSOC);
+        $data = [];
+        foreach ($respuesta as $value) {
+            $data[] = array_change_key_case($value);
+        }
+        $resultado->closeCursor();
+        return array_shift($data);
     }
-    $resultado->closeCursor();
-    return array_shift($data);
-}
 
     protected static function crearObjeto($registro)
     {

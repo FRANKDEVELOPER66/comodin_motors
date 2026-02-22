@@ -150,7 +150,7 @@ btnCrearCliente.addEventListener('click', async () => {
         formData.append('empresa', empresa);
         formData.append('direccion', direccion);
 
-        const url = '/comodin_motors/API/orden/guardar-cliente';
+        const url = '/comodin_motors/API/clientes/guardar';
         const config = {
             method: 'POST',
             body: formData
@@ -351,33 +351,33 @@ if (!carImage.src) {
 
 function dibujarVehiculo() {
     ctx.clearRect(0, 0, carCanvas.width, carCanvas.height);
-    
+
     // Fondo
     ctx.fillStyle = '#2a2a2a';
     ctx.fillRect(0, 0, carCanvas.width, carCanvas.height);
-    
+
     // Si tienes imagen
     if (carImage.complete) {
         const aspectRatio = carImage.width / carImage.height;
         const maxWidth = carCanvas.width * 0.8;
         const maxHeight = carCanvas.height * 0.8;
-        
+
         let width = maxWidth;
         let height = width / aspectRatio;
-        
+
         if (height > maxHeight) {
             height = maxHeight;
             width = height * aspectRatio;
         }
-        
+
         const x = (carCanvas.width - width) / 2;
         const y = (carCanvas.height - height) / 2;
-        
+
         ctx.drawImage(carImage, x, y, width, height);
     } else {
         dibujarVehiculoSimple();
     }
-    
+
     // Redibujar daños
     danosRegistrados.forEach(dano => {
         dibujarMarcadorDano(dano.x, dano.y);
@@ -386,53 +386,53 @@ function dibujarVehiculo() {
 
 function dibujarVehiculoSimple() {
     ctx.clearRect(0, 0, carCanvas.width, carCanvas.height);
-    
+
     // Fondo
     ctx.fillStyle = '#2a2a2a';
     ctx.fillRect(0, 0, carCanvas.width, carCanvas.height);
-    
+
     ctx.strokeStyle = '#00ff00';
     ctx.lineWidth = 3;
     ctx.fillStyle = '#1a1a1a';
-    
+
     const centerX = carCanvas.width / 2;
     const centerY = carCanvas.height / 2;
     const carWidth = 200;
     const carHeight = 350;
-    
+
     // Cuerpo del vehículo (rectángulo redondeado)
     ctx.beginPath();
-    ctx.roundRect(centerX - carWidth/2, centerY - carHeight/2, carWidth, carHeight, 20);
+    ctx.roundRect(centerX - carWidth / 2, centerY - carHeight / 2, carWidth, carHeight, 20);
     ctx.fill();
     ctx.stroke();
-    
+
     // Parabrisas
     ctx.beginPath();
-    ctx.roundRect(centerX - carWidth/2 + 20, centerY - carHeight/2 + 30, carWidth - 40, 80, 10);
+    ctx.roundRect(centerX - carWidth / 2 + 20, centerY - carHeight / 2 + 30, carWidth - 40, 80, 10);
     ctx.fill();
     ctx.stroke();
-    
+
     // Ventanas laterales
     ctx.beginPath();
-    ctx.roundRect(centerX - carWidth/2 + 20, centerY - 40, carWidth - 40, 80, 10);
+    ctx.roundRect(centerX - carWidth / 2 + 20, centerY - 40, carWidth - 40, 80, 10);
     ctx.fill();
     ctx.stroke();
-    
+
     // Parabrisas trasero
     ctx.beginPath();
-    ctx.roundRect(centerX - carWidth/2 + 20, centerY + carHeight/2 - 110, carWidth - 40, 80, 10);
+    ctx.roundRect(centerX - carWidth / 2 + 20, centerY + carHeight / 2 - 110, carWidth - 40, 80, 10);
     ctx.fill();
     ctx.stroke();
-    
+
     // Etiquetas
     ctx.fillStyle = '#b0b0b0';
     ctx.font = '14px Arial';
     ctx.textAlign = 'center';
-    ctx.fillText('FRONTAL', centerX, centerY - carHeight/2 - 10);
-    ctx.fillText('TRASERO', centerX, centerY + carHeight/2 + 25);
-    ctx.fillText('LATERAL IZQ', centerX - carWidth/2 - 70, centerY);
-    ctx.fillText('LATERAL DER', centerX + carWidth/2 + 70, centerY);
-    
+    ctx.fillText('FRONTAL', centerX, centerY - carHeight / 2 - 10);
+    ctx.fillText('TRASERO', centerX, centerY + carHeight / 2 + 25);
+    ctx.fillText('LATERAL IZQ', centerX - carWidth / 2 - 70, centerY);
+    ctx.fillText('LATERAL DER', centerX + carWidth / 2 + 70, centerY);
+
     // Redibujar daños
     danosRegistrados.forEach(dano => {
         dibujarMarcadorDano(dano.x, dano.y);
@@ -443,12 +443,12 @@ function dibujarMarcadorDano(x, y) {
     ctx.fillStyle = '#ff4444';
     ctx.strokeStyle = '#fff';
     ctx.lineWidth = 3;
-    
+
     ctx.beginPath();
     ctx.arc(x, y, 12, 0, Math.PI * 2);
     ctx.fill();
     ctx.stroke();
-    
+
     // X en el centro
     ctx.strokeStyle = '#fff';
     ctx.lineWidth = 2;
@@ -465,7 +465,7 @@ carCanvas.addEventListener('click', async (e) => {
     const rect = carCanvas.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
-    
+
     // Pedir descripción del daño
     const { value: descripcion } = await Swal.fire({
         title: 'Describir daño',
@@ -481,7 +481,7 @@ carCanvas.addEventListener('click', async (e) => {
             }
         }
     });
-    
+
     if (descripcion) {
         const dano = {
             x: x,
@@ -490,7 +490,7 @@ carCanvas.addEventListener('click', async (e) => {
             ubicacion: determinarUbicacion(x, y),
             tipo_dano: 'otro'
         };
-        
+
         danosRegistrados.push(dano);
         dibujarVehiculo();
         actualizarListaDanos();
@@ -500,7 +500,7 @@ carCanvas.addEventListener('click', async (e) => {
 function determinarUbicacion(x, y) {
     const centerY = carCanvas.height / 2;
     const centerX = carCanvas.width / 2;
-    
+
     if (y < centerY - 100) return 'frontal';
     if (y > centerY + 100) return 'trasero';
     if (x < centerX) return 'lateral_izquierdo';
@@ -512,10 +512,10 @@ function actualizarListaDanos() {
         damageList.style.display = 'none';
         return;
     }
-    
+
     damageList.style.display = 'block';
     damageItems.innerHTML = '';
-    
+
     danosRegistrados.forEach((dano, index) => {
         const item = document.createElement('div');
         item.className = 'damage-item';
