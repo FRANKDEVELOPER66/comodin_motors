@@ -61,11 +61,9 @@ class Orden extends ActiveRecord
     public static function generarNumeroOrden()
     {
         $db = self::$db;
-
-        $stmt = $db->query("SELECT COUNT(*) as total FROM ordenes_servicio");
-        $row = $stmt->fetch(\PDO::FETCH_ASSOC);
-        $siguiente = ($row['total'] ?? 0) + 1;
-
+        $stmt = $db->query("SELECT MAX(CAST(numero_orden AS UNSIGNED)) as ultimo FROM ordenes_servicio");
+        $row  = $stmt->fetch(\PDO::FETCH_ASSOC);
+        $siguiente = (intval($row['ultimo'] ?? 0)) + 1;
         return str_pad($siguiente, 6, '0', STR_PAD_LEFT);
     }
 

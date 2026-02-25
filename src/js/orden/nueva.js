@@ -652,7 +652,6 @@ async function guardarOrden(e) {
         return;
     }
 
-    // REEMPLAZA el bloque de validarFormulario por esto:
     if (!validarFormulario(elementos.formularioOrden, [
         'id_cliente',
         'id_vehiculo',
@@ -662,7 +661,7 @@ async function guardarOrden(e) {
         'cliente_direccion',
         'observaciones',
         'inventario_otros',
-        'buscarServicio'  // ← AGREGAR ESTA LÍNEA
+        'buscarServicio'
     ])) {
         Swal.fire({ icon: 'warning', title: 'Campos incompletos', text: 'Complete todos los campos obligatorios' });
         return;
@@ -677,12 +676,21 @@ async function guardarOrden(e) {
     });
 
     try {
-        // Forzar los valores antes de enviar
         const formData = new FormData(elementos.formularioOrden);
         formData.set('id_cliente', elementos.idCliente.value);
         formData.set('id_vehiculo', elementos.idVehiculo.value);
 
-        console.log('id_cliente que se envía:', elementos.idCliente.value); // DEBUG
+        // DEBUG - ver exactamente qué se envía
+        console.log('=== DEBUG GUARDAR ORDEN ===');
+        console.log('id_cliente:', formData.get('id_cliente'));
+        console.log('id_vehiculo:', formData.get('id_vehiculo'));
+        console.log('marca:', formData.get('marca'));
+        console.log('modelo:', formData.get('modelo'));
+        console.log('placas:', formData.get('placas'));
+        console.log('kilometraje_actual:', formData.get('kilometraje_actual'));
+        console.log('trabajo_realizar:', formData.get('trabajo_realizar'));
+        console.log('fecha_orden:', formData.get('fecha_orden'));
+        console.log('hora_ingreso:', formData.get('hora_ingreso'));
 
         // Si no hay vehículo seleccionado, crear uno nuevo primero
         if (!formData.get('id_vehiculo') || formData.get('id_vehiculo') === '') {
@@ -702,10 +710,12 @@ async function guardarOrden(e) {
             });
             const dataV = await respV.json();
 
+            console.log('Respuesta vehiculo:', dataV);
+
             if (dataV.codigo === 1) {
                 formData.set('id_vehiculo', dataV.id_vehiculo);
             } else {
-                throw new Error(dataV.mensaje || 'Error al crear vehículo');
+                throw new Error(dataV.detalle || dataV.mensaje || 'Error al crear vehículo');
             }
         }
 
@@ -713,11 +723,16 @@ async function guardarOrden(e) {
         formData.append('servicios', JSON.stringify(obtenerServiciosParaGuardar()));
         formData.append('danos', JSON.stringify(danosRegistrados));
 
+        console.log('id_vehiculo final que se envía:', formData.get('id_vehiculo'));
+
         const response = await fetch('/comodin_motors/API/ordenes/guardar', {
             method: 'POST',
             body: formData
         });
+
+        // Leer siempre el JSON, haya error o no
         const data = await response.json();
+        console.log('Respuesta ordenes/guardar:', data);
 
         if (data.codigo === 1) {
             const result = await Swal.fire({
@@ -742,21 +757,23 @@ async function guardarOrden(e) {
                 window.location.reload();
             }
         } else {
-            throw new Error(data.mensaje || 'Error al guardar');
+            // Mostrar el detalle exacto del error PHP
+            throw new Error(data.detalle || data.mensaje || 'Error al guardar');
         }
+
     } catch (error) {
         console.error('Error al guardar orden:', error);
         Swal.fire({
             icon: 'error',
-            title: 'Error',
+            title: 'Error al guardar',
             text: error.message || 'No se pudo guardar la orden',
             confirmButtonColor: '#ff4444',
             background: '#1a1a1a',
             color: '#fff'
         });
+    } finally {
+        elementos.btnGuardarOrden.disabled = false;
     }
-
-    elementos.btnGuardarOrden.disabled = false;
 }
 
 console.log('✅ Script nueva.js cargado correctamente');

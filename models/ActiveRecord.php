@@ -275,7 +275,7 @@ class ActiveRecord
         $atributos = [];
         foreach (static::$columnasDB as $columna) {
             $columna = strtolower($columna);
-            if ($columna === 'id' || $columna === static::$idTabla) continue;
+            if ($columna === 'id' || $columna === static::$idTabla) continue; // ← solo excluye la PK
             $atributos[$columna] = $this->$columna;
         }
         return $atributos;

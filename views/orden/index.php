@@ -308,7 +308,7 @@
     </div>
 
     <!-- Botón flotante -->
-    <a href="/comodin_motors/ordenes/nueva" class="floating-btn" title="Nueva Orden">
+    <a href="/comodin_motors/orden/nueva" class="floating-btn" title="Nueva Orden">
         <i class="bi bi-plus-lg"></i>
     </a>
 </div>
