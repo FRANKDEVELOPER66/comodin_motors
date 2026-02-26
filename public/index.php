@@ -21,6 +21,7 @@ $router->get('/dashboard', [DashboardController::class, 'index']);
 $router->get('/orden', [OrdenController::class, 'index']);
 $router->get('/orden/nueva', [OrdenController::class, 'nueva']);
 $router->get('/orden/ver', [OrdenController::class, 'ver']);
+$router->get('/orden/pdf', [OrdenController::class, 'pdf']);
 
 // ============================================
 // APIs - Clientes

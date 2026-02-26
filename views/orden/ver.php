@@ -523,9 +523,10 @@ $primeraVista   = $vistasConDanos[0] ?? 'frontal';
             <div class="d-flex align-items-center gap-3 flex-wrap">
                 <span class="estado-badge <?= $estadoClass ?>"><?= $estadoLabel ?></span>
                 <div class="d-flex gap-2">
-                    <button class="btn-accion btn-outline" onclick="window.print()">
-                        <i class="bi bi-printer"></i> Imprimir
-                    </button>
+                    <a href="/comodin_motors/orden/pdf?id=<?= $orden['id_orden'] ?>"
+                        class="btn-accion btn-outline" target="_blank">
+                        <i class="bi bi-file-earmark-pdf"></i> Ver PDF
+                    </a>
                     <a href="/comodin_motors/orden" class="btn-accion btn-outline">
                         <i class="bi bi-arrow-left"></i> Volver
                     </a>
@@ -789,9 +790,10 @@ $primeraVista   = $vistasConDanos[0] ?? 'frontal';
                     </div>
 
                     <div class="mt-3 d-grid gap-2">
-                        <button class="btn-accion btn-outline w-100 justify-content-center" onclick="window.print()">
-                            <i class="bi bi-printer"></i> Imprimir Orden
-                        </button>
+                        <a href="/comodin_motors/orden/pdf?id=<?= $orden['id_orden'] ?>"
+                            class="btn-accion btn-outline w-100 justify-content-center text-decoration-none" target="_blank">
+                            <i class="bi bi-file-earmark-pdf"></i> Ver PDF
+                        </a>
                         <a href="/comodin_motors/orden/nueva" class="btn-accion btn-outline w-100 justify-content-center text-decoration-none">
                             <i class="bi bi-plus-circle"></i> Nueva Orden
                         </a>
