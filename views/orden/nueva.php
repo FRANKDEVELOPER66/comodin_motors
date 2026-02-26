@@ -1,6 +1,220 @@
 <?php echo "PRUEBA - LA VISTA CARGA"; ?>
 
 <style>
+    /* Tabs de vistas */
+    .vista-tabs {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        margin-bottom: 1rem;
+    }
+
+    .vista-tab {
+        background: #2a2a2a;
+        border: 2px solid #3a3a3a;
+        color: #b0b0b0;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 0.85rem;
+        font-weight: 600;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+
+    .vista-tab:hover {
+        border-color: #00ff00;
+        color: #00ff00;
+    }
+
+    .vista-tab.active {
+        background: rgba(0, 255, 0, 0.15);
+        border-color: #00ff00;
+        color: #00ff00;
+    }
+
+    /* Contenedor del diagrama */
+    .diagram-wrapper {
+        background: #1a1a1a;
+        border: 2px solid #3a3a3a;
+        border-radius: 15px;
+        padding: 1.5rem;
+        text-align: center;
+    }
+
+    .diagram-container {
+        position: relative;
+        display: inline-block;
+        cursor: crosshair;
+        max-width: 500px;
+        width: 100%;
+    }
+
+    .diagram-container img {
+        width: 100%;
+        height: auto;
+        border-radius: 10px;
+        pointer-events: none;
+        user-select: none;
+        /* Quita el fondo blanco de las imágenes PNG */
+        mix-blend-mode: normal;
+        filter: drop-shadow(0 0 10px rgba(0, 255, 0, 0.15));
+    }
+
+    .diagram-hint {
+        color: #555;
+        font-size: 0.85rem;
+        margin-top: 0.75rem;
+        margin-bottom: 0;
+    }
+
+    /* Markers de daño sobre la imagen */
+    .damage-pin {
+        position: absolute;
+        width: 28px;
+        height: 28px;
+        background: radial-gradient(circle, #ff6666, #cc0000);
+        border: 3px solid #fff;
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+        cursor: pointer;
+        animation: pinPulse 2s infinite;
+        z-index: 10;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.7rem;
+        color: #fff;
+        font-weight: 700;
+        transition: transform 0.2s;
+    }
+
+    .damage-pin:hover {
+        transform: translate(-50%, -50%) scale(1.3);
+    }
+
+    .damage-pin .pin-tooltip {
+        display: none;
+        position: absolute;
+        bottom: 130%;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #1a1a1a;
+        border: 1px solid #ff4444;
+        color: #fff;
+        padding: 0.4rem 0.75rem;
+        border-radius: 6px;
+        font-size: 0.78rem;
+        white-space: nowrap;
+        z-index: 20;
+        pointer-events: none;
+    }
+
+    .damage-pin:hover .pin-tooltip {
+        display: block;
+    }
+
+    @keyframes pinPulse {
+
+        0%,
+        100% {
+            box-shadow: 0 0 0 0 rgba(255, 68, 68, 0.6);
+        }
+
+        50% {
+            box-shadow: 0 0 0 8px rgba(255, 68, 68, 0);
+        }
+    }
+
+    /* Modal para describir daño */
+    .dano-modal {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.7);
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+    }
+
+    .dano-modal-content {
+        background: #1e1e1e;
+        border: 2px solid #00ff00;
+        border-radius: 15px;
+        padding: 2rem;
+        width: 100%;
+        max-width: 420px;
+        box-shadow: 0 20px 60px rgba(0, 255, 0, 0.15);
+    }
+
+    /* Lista de daños */
+    .damage-list-item {
+        background: #1a1a1a;
+        border: 1px solid #3a3a3a;
+        border-radius: 10px;
+        padding: 0.9rem 1rem;
+        margin-bottom: 0.6rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        transition: border-color 0.2s;
+    }
+
+    .damage-list-item:hover {
+        border-color: #ff4444;
+    }
+
+    .damage-list-item .dano-vista {
+        background: rgba(0, 255, 0, 0.1);
+        color: #00ff00;
+        border: 1px solid rgba(0, 255, 0, 0.3);
+        padding: 0.2rem 0.6rem;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        white-space: nowrap;
+        text-transform: uppercase;
+    }
+
+    .damage-list-item .dano-tipo {
+        background: rgba(255, 68, 68, 0.15);
+        color: #ff8080;
+        border: 1px solid rgba(255, 68, 68, 0.3);
+        padding: 0.2rem 0.6rem;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .damage-list-item .dano-desc {
+        color: #ddd;
+        flex: 1;
+        font-size: 0.9rem;
+    }
+
+    .btn-remove-dano {
+        background: none;
+        border: none;
+        color: #ff4444;
+        cursor: pointer;
+        padding: 0.25rem;
+        border-radius: 5px;
+        transition: background 0.2s;
+        font-size: 1.1rem;
+    }
+
+    .btn-remove-dano:hover {
+        background: rgba(255, 68, 68, 0.15);
+    }
+
+
+
+
+
     /* Tabla de servicios */
     .table-servicios {
         width: 100%;
@@ -929,8 +1143,8 @@
                             </table>
                         </div>
                     </div>
-
-                    <!-- SECCIÓN 5: DAÑOS DEL VEHÍCULO -->
+                    <!-- SECCIÓN 5: DAÑOS DEL VEHÍCULO — Reemplaza tu sección actual -->
+                    <!-- ============================================================ -->
                     <div class="section-card">
                         <div class="section-header">
                             <h3>
@@ -939,22 +1153,76 @@
                             </h3>
                         </div>
 
-                        <div class="alert alert-info" style="background: rgba(0, 123, 255, 0.1); border: 1px solid rgba(0, 123, 255, 0.3); color: #b0b0b0;">
+                        <div class="alert alert-info" style="background: rgba(0,123,255,0.1); border: 1px solid rgba(0,123,255,0.3); color: #b0b0b0;">
                             <i class="bi bi-info-circle"></i>
-                            Haga clic en el diagrama del vehículo para marcar los daños preexistentes. Puede agregar una descripción para cada daño.
+                            Seleccione una vista y haga clic sobre el vehículo para marcar daños preexistentes.
                         </div>
 
-                        <div class="vehicle-diagram">
-                            <canvas id="carCanvas" width="800" height="500"></canvas>
+                        <!-- Tabs de vistas -->
+                        <div class="vista-tabs">
+                            <button type="button" class="vista-tab active" data-vista="frontal" data-img="/comodin_motors/public/images/front.png">
+                                <i class="bi bi-arrow-up-circle"></i> Frontal
+                            </button>
+                            <button type="button" class="vista-tab" data-vista="trasero" data-img="/comodin_motors/public/images/back.png">
+                                <i class="bi bi-arrow-down-circle"></i> Trasero
+                            </button>
+                            <button type="button" class="vista-tab" data-vista="lateral_izquierdo" data-img="/comodin_motors/public/images/left.png">
+                                <i class="bi bi-arrow-left-circle"></i> Lat. Izquierdo
+                            </button>
+                            <button type="button" class="vista-tab" data-vista="lateral_derecho" data-img="/comodin_motors/public/images/rigth.png">
+                                <i class="bi bi-arrow-right-circle"></i> Lat. Derecho
+                            </button>
+                            <button type="button" class="vista-tab" data-vista="techo" data-img="/comodin_motors/public/images/top.png">
+                                <i class="bi bi-arrow-up-square"></i> Techo
+                            </button>
                         </div>
 
-                        <div class="damage-list mt-4" id="damageList" style="display: none;">
+                        <!-- Contenedor del diagrama -->
+                        <div class="diagram-wrapper">
+                            <div class="diagram-container" id="diagramContainer">
+                                <img id="carImage" src="/comodin_motors/public/images/front.png" alt="Vista frontal" draggable="false">
+                                <!-- Los markers se insertan aquí dinámicamente -->
+                            </div>
+                            <p class="diagram-hint"><i class="bi bi-cursor"></i> Haz clic en el vehículo para marcar un daño</p>
+                        </div>
+
+                        <!-- Modal para describir el daño -->
+                        <div id="modalDano" class="dano-modal" style="display:none;">
+                            <div class="dano-modal-content">
+                                <h5 class="text-white mb-3"><i class="bi bi-exclamation-triangle text-danger"></i> Describir Daño</h5>
+                                <div class="mb-3">
+                                    <label class="form-label">Tipo de daño *</label>
+                                    <select id="tipoDanoInput" class="form-select">
+                                        <option value="rayón">Rayón</option>
+                                        <option value="abolladura">Abolladura</option>
+                                        <option value="cristal_roto">Cristal roto</option>
+                                        <option value="faltante">Faltante</option>
+                                        <option value="otro">Otro</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Descripción *</label>
+                                    <input type="text" id="descripcionDanoInput" class="form-control"
+                                        placeholder="Ej: Rayón en puerta delantera..." maxlength="255">
+                                </div>
+                                <div class="d-flex gap-2 justify-content-end">
+                                    <button type="button" id="btnCancelarDano" class="btn btn-outline-green">
+                                        Cancelar
+                                    </button>
+                                    <button type="button" id="btnConfirmarDano" class="btn btn-green">
+                                        <i class="bi bi-check-lg"></i> Guardar Daño
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Lista de daños registrados -->
+                        <div id="damageList" class="damage-list mt-4" style="display:none;">
                             <h5 class="text-white mb-3">
                                 <i class="bi bi-list-ul"></i> Daños registrados
+                                <span id="danoCount" class="badge ms-2" style="background:#ff4444; font-size:0.85rem;">0</span>
                             </h5>
-                            <div id="damageItems">
-                                <!-- Se llenará dinámicamente -->
-                            </div>
+                            <div id="damageItems"></div>
                         </div>
                     </div>
 

@@ -6,8 +6,6 @@ import Swal from "sweetalert2";
 // ============================================
 let clienteSeleccionado = null;
 let vehiculoSeleccionado = null;
-let danosRegistrados = [];
-let danoCounter = 0;
 
 // ============================================
 // ELEMENTOS DEL DOM
@@ -31,9 +29,6 @@ const elementos = {
     idVehiculo: document.getElementById('id_vehiculo'),
     nivelCombustible: document.getElementById('nivel_combustible'),
     fuelLevel: document.getElementById('fuelLevel'),
-    carCanvas: document.getElementById('carCanvas'),
-    damageList: document.getElementById('damageList'),
-    damageItems: document.getElementById('damageItems'),
     resumenCliente: document.getElementById('resumen_cliente'),
     resumenTelefono: document.getElementById('resumen_telefono'),
     resumenVehiculo: document.getElementById('resumen_vehiculo'),
@@ -49,7 +44,6 @@ const elementos = {
 // ============================================
 document.addEventListener('DOMContentLoaded', () => {
     inicializarEventos();
-    inicializarCanvas();
     inicializarCombustible();
     console.log('✅ Sistema de Nueva Orden Inicializado');
 });
@@ -110,9 +104,9 @@ function inicializarEventos() {
                     const item = document.createElement('div');
                     item.className = 'autocomplete-item';
                     item.innerHTML = `
-                    <div class="servicio-descripcion">${servicio.descripcion}</div>
-                    <div class="servicio-precio">Q ${servicio.precio_sugerido}</div>
-                `;
+                        <div class="servicio-descripcion">${servicio.descripcion}</div>
+                        <div class="servicio-precio">Q ${servicio.precio_sugerido}</div>
+                    `;
                     item.addEventListener('click', () => {
                         agregarServicioATabla(servicio);
                         resultados.classList.remove('show');
@@ -155,7 +149,6 @@ async function buscarCliente() {
 }
 
 function mostrarDatosCliente(cliente) {
-    console.log('Cliente recibido:', cliente); // ← AGREGAR ESTO
     clienteSeleccionado = cliente;
 
     elementos.idCliente.value = cliente.id_cliente;
@@ -276,7 +269,7 @@ function mostrarVehiculosExistentes(vehiculos) {
             </div>
         `;
 
-        card.querySelector('.vehicle-card').addEventListener('click', (e) => {
+        card.querySelector('.vehicle-card').addEventListener('click', () => {
             seleccionarVehiculo(v, card.querySelector('.vehicle-card'));
         });
 
@@ -433,196 +426,6 @@ window.eliminarServicio = (btn) => {
 };
 
 // ============================================
-// CANVAS DE DAÑOS
-// ============================================
-function inicializarCanvas() {
-    if (!elementos.carCanvas) return;
-    const ctx = elementos.carCanvas.getContext('2d');
-    dibujarVehiculo(ctx);
-    elementos.carCanvas.addEventListener('click', (e) => agregarDanoEnCanvas(e, ctx));
-}
-
-function dibujarVehiculo(ctx) {
-    const canvas = elementos.carCanvas;
-    const w = canvas.width;
-    const h = canvas.height;
-
-    ctx.clearRect(0, 0, w, h);
-    ctx.fillStyle = '#2a2a2a';
-    ctx.fillRect(0, 0, w, h);
-
-    const cx = w / 2;
-    const cy = h / 2;
-    const cw = 200;
-    const ch = 350;
-
-    ctx.strokeStyle = '#00ff00';
-    ctx.lineWidth = 3;
-    ctx.fillStyle = '#1a1a1a';
-
-    // Cuerpo
-    ctx.beginPath();
-    ctx.roundRect(cx - cw / 2, cy - ch / 2, cw, ch, 20);
-    ctx.fill();
-    ctx.stroke();
-
-    // Parabrisas delantero
-    ctx.beginPath();
-    ctx.roundRect(cx - cw / 2 + 20, cy - ch / 2 + 30, cw - 40, 70, 10);
-    ctx.fill();
-    ctx.stroke();
-
-    // Ventanas
-    ctx.beginPath();
-    ctx.roundRect(cx - cw / 2 + 20, cy - 35, cw - 40, 70, 10);
-    ctx.fill();
-    ctx.stroke();
-
-    // Parabrisas trasero
-    ctx.beginPath();
-    ctx.roundRect(cx - cw / 2 + 20, cy + ch / 2 - 100, cw - 40, 70, 10);
-    ctx.fill();
-    ctx.stroke();
-
-    // Ruedas
-    ctx.fillStyle = '#555';
-    [[cx - cw / 2 - 25, cy - ch / 2 + 30], [cx + cw / 2 - 5, cy - ch / 2 + 30],
-    [cx - cw / 2 - 25, cy + ch / 2 - 90], [cx + cw / 2 - 5, cy + ch / 2 - 90]].forEach(([rx, ry]) => {
-        ctx.beginPath();
-        ctx.roundRect(rx, ry, 30, 60, 8);
-        ctx.fill();
-    });
-
-    // Etiquetas
-    ctx.fillStyle = '#00ff00';
-    ctx.font = 'bold 14px Arial';
-    ctx.textAlign = 'center';
-    ctx.fillText('FRONTAL', cx, cy - ch / 2 - 15);
-    ctx.fillText('TRASERO', cx, cy + ch / 2 + 25);
-    ctx.fillStyle = '#888';
-    ctx.font = '12px Arial';
-    ctx.fillText('IZQ', cx - cw / 2 - 35, cy);
-    ctx.fillText('DER', cx + cw / 2 + 35, cy);
-
-    // Redibujar daños
-    danosRegistrados.forEach(d => dibujarMarcadorDano(ctx, d.x, d.y));
-}
-
-function dibujarMarcadorDano(ctx, x, y) {
-    ctx.fillStyle = '#ff4444';
-    ctx.strokeStyle = '#fff';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.arc(x, y, 12, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.stroke();
-
-    ctx.strokeStyle = '#fff';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(x - 5, y - 5); ctx.lineTo(x + 5, y + 5);
-    ctx.moveTo(x + 5, y - 5); ctx.lineTo(x - 5, y + 5);
-    ctx.stroke();
-}
-
-async function agregarDanoEnCanvas(e, ctx) {
-    const rect = elementos.carCanvas.getBoundingClientRect();
-    const scaleX = elementos.carCanvas.width / rect.width;
-    const scaleY = elementos.carCanvas.height / rect.height;
-    const x = (e.clientX - rect.left) * scaleX;
-    const y = (e.clientY - rect.top) * scaleY;
-
-    const result = await Swal.fire({
-        title: 'Registrar daño',
-        html: `
-            <label class="form-label">Descripción:</label>
-            <textarea id="dano-descripcion" class="swal2-input" rows="3"
-                style="height:auto; background:#2a2a2a; border:1px solid #3a3a3a; color:#fff;"
-                placeholder="Ej: Rayón en puerta lateral izquierda"></textarea>
-            <label class="form-label mt-2">Tipo:</label>
-            <select id="dano-tipo" class="swal2-select"
-                style="background:#2a2a2a; border:1px solid #3a3a3a; color:#fff;">
-                <option value="rayón">Rayón</option>
-                <option value="abolladura">Abolladura</option>
-                <option value="cristal_roto">Cristal roto</option>
-                <option value="faltante">Faltante</option>
-                <option value="otro">Otro</option>
-            </select>
-        `,
-        confirmButtonText: 'Agregar',
-        cancelButtonText: 'Cancelar',
-        showCancelButton: true,
-        confirmButtonColor: '#00ff00',
-        background: '#1a1a1a',
-        color: '#fff',
-        preConfirm: () => {
-            const descripcion = document.getElementById('dano-descripcion').value.trim();
-            const tipo = document.getElementById('dano-tipo').value;
-            if (!descripcion) {
-                Swal.showValidationMessage('La descripción es requerida');
-                return false;
-            }
-            return { descripcion, tipo };
-        }
-    });
-
-    if (result.isConfirmed) {
-        danosRegistrados.push({
-            id: ++danoCounter,
-            x, y,
-            descripcion: result.value.descripcion,
-            tipo_dano: result.value.tipo,
-            ubicacion: determinarUbicacion(x, y)
-        });
-        dibujarVehiculo(ctx);
-        actualizarListaDanos();
-        Toast.fire({ icon: 'success', title: 'Daño registrado' });
-    }
-}
-
-function determinarUbicacion(x, y) {
-    const cy = elementos.carCanvas.height / 2;
-    const cx = elementos.carCanvas.width / 2;
-    if (y < cy - 100) return 'frontal';
-    if (y > cy + 100) return 'trasero';
-    if (x < cx) return 'lateral_izquierdo';
-    return 'lateral_derecho';
-}
-
-function actualizarListaDanos() {
-    if (danosRegistrados.length === 0) {
-        elementos.damageList.style.display = 'none';
-        return;
-    }
-    elementos.damageList.style.display = 'block';
-    elementos.damageItems.innerHTML = '';
-
-    danosRegistrados.forEach(dano => {
-        const item = document.createElement('div');
-        item.className = 'damage-item';
-        item.innerHTML = `
-            <div class="damage-info">
-                <span class="damage-badge">${dano.tipo_dano}</span>
-                <strong class="d-block mt-1">${dano.descripcion}</strong>
-                <small class="text-muted">${dano.ubicacion.replace(/_/g, ' ').toUpperCase()}</small>
-            </div>
-            <button type="button" class="btn btn-sm btn-danger" onclick="eliminarDano(${dano.id})">
-                <i class="bi bi-trash"></i>
-            </button>
-        `;
-        elementos.damageItems.appendChild(item);
-    });
-}
-
-window.eliminarDano = (id) => {
-    danosRegistrados = danosRegistrados.filter(d => d.id !== id);
-    const ctx = elementos.carCanvas.getContext('2d');
-    dibujarVehiculo(ctx);
-    actualizarListaDanos();
-    Toast.fire({ icon: 'info', title: 'Daño eliminado' });
-};
-
-// ============================================
 // ACTUALIZAR RESUMEN
 // ============================================
 function actualizarResumen() {
@@ -653,15 +456,9 @@ async function guardarOrden(e) {
     }
 
     if (!validarFormulario(elementos.formularioOrden, [
-        'id_cliente',
-        'id_vehiculo',
-        'numero_serie',
-        'proximo_servicio_km',
-        'cliente_empresa',
-        'cliente_direccion',
-        'observaciones',
-        'inventario_otros',
-        'buscarServicio'
+        'id_cliente', 'id_vehiculo', 'numero_serie', 'proximo_servicio_km',
+        'cliente_empresa', 'cliente_direccion', 'observaciones',
+        'inventario_otros', 'buscarServicio'
     ])) {
         Swal.fire({ icon: 'warning', title: 'Campos incompletos', text: 'Complete todos los campos obligatorios' });
         return;
@@ -680,17 +477,12 @@ async function guardarOrden(e) {
         formData.set('id_cliente', elementos.idCliente.value);
         formData.set('id_vehiculo', elementos.idVehiculo.value);
 
-        // DEBUG - ver exactamente qué se envía
-        console.log('=== DEBUG GUARDAR ORDEN ===');
-        console.log('id_cliente:', formData.get('id_cliente'));
-        console.log('id_vehiculo:', formData.get('id_vehiculo'));
-        console.log('marca:', formData.get('marca'));
-        console.log('modelo:', formData.get('modelo'));
-        console.log('placas:', formData.get('placas'));
-        console.log('kilometraje_actual:', formData.get('kilometraje_actual'));
-        console.log('trabajo_realizar:', formData.get('trabajo_realizar'));
-        console.log('fecha_orden:', formData.get('fecha_orden'));
-        console.log('hora_ingreso:', formData.get('hora_ingreso'));
+        // ── DAÑOS: leer del hidden input que maneja el sistema de imágenes ──
+        const danosHidden = document.getElementById('danosHidden');
+        const danosJson = danosHidden?.value ?? '[]';
+        formData.set('danos', danosJson); // set en lugar de append para no duplicar
+
+        console.log('Daños que se envían:', danosJson);
 
         // Si no hay vehículo seleccionado, crear uno nuevo primero
         if (!formData.get('id_vehiculo') || formData.get('id_vehiculo') === '') {
@@ -710,8 +502,6 @@ async function guardarOrden(e) {
             });
             const dataV = await respV.json();
 
-            console.log('Respuesta vehiculo:', dataV);
-
             if (dataV.codigo === 1) {
                 formData.set('id_vehiculo', dataV.id_vehiculo);
             } else {
@@ -719,18 +509,14 @@ async function guardarOrden(e) {
             }
         }
 
-        // Agregar servicios y daños
-        formData.append('servicios', JSON.stringify(obtenerServiciosParaGuardar()));
-        formData.append('danos', JSON.stringify(danosRegistrados));
-
-        console.log('id_vehiculo final que se envía:', formData.get('id_vehiculo'));
+        // Agregar servicios
+        formData.set('servicios', JSON.stringify(obtenerServiciosParaGuardar()));
 
         const response = await fetch('/comodin_motors/API/ordenes/guardar', {
             method: 'POST',
             body: formData
         });
 
-        // Leer siempre el JSON, haya error o no
         const data = await response.json();
         console.log('Respuesta ordenes/guardar:', data);
 
@@ -757,7 +543,6 @@ async function guardarOrden(e) {
                 window.location.reload();
             }
         } else {
-            // Mostrar el detalle exacto del error PHP
             throw new Error(data.detalle || data.mensaje || 'Error al guardar');
         }
 
@@ -775,5 +560,169 @@ async function guardarOrden(e) {
         elementos.btnGuardarOrden.disabled = false;
     }
 }
+
+// ============================================
+// SISTEMA DE DAÑOS CON IMÁGENES
+// ============================================
+(function () {
+    let vistaActual = 'frontal';
+    let pendingClick = null;
+    let danos = [];
+    let pinCounter = 0;
+
+    const container = document.getElementById('diagramContainer');
+    const carImage = document.getElementById('carImage');
+    const modal = document.getElementById('modalDano');
+    const damageList = document.getElementById('damageList');
+    const damageItems = document.getElementById('damageItems');
+    const danoCount = document.getElementById('danoCount');
+
+    if (!container) return; // salir si no está la sección de daños
+
+    // ── Cambio de vista ────────────────────────────────────────
+    document.querySelectorAll('.vista-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            document.querySelectorAll('.vista-tab').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            vistaActual = tab.dataset.vista;
+            carImage.src = tab.dataset.img;
+            carImage.alt = tab.textContent.trim();
+            renderPins();
+        });
+    });
+
+    // ── Click en diagrama ──────────────────────────────────────
+    container.addEventListener('click', (e) => {
+        if (e.target.closest('.damage-pin')) return;
+
+        const rect = container.getBoundingClientRect();
+        const pctX = ((e.clientX - rect.left) / rect.width) * 100;
+        const pctY = ((e.clientY - rect.top) / rect.height) * 100;
+
+        pendingClick = {
+            pctX: parseFloat(pctX.toFixed(2)),
+            pctY: parseFloat(pctY.toFixed(2))
+        };
+
+        document.getElementById('tipoDanoInput').value = 'rayón';
+        document.getElementById('descripcionDanoInput').value = '';
+        modal.style.display = 'flex';
+        setTimeout(() => document.getElementById('descripcionDanoInput').focus(), 100);
+    });
+
+    // ── Confirmar daño ─────────────────────────────────────────
+    document.getElementById('btnConfirmarDano').addEventListener('click', () => {
+        const tipo = document.getElementById('tipoDanoInput').value;
+        const desc = document.getElementById('descripcionDanoInput').value.trim();
+
+        if (!desc) {
+            document.getElementById('descripcionDanoInput').style.borderColor = '#ff4444';
+            return;
+        }
+        document.getElementById('descripcionDanoInput').style.borderColor = '';
+
+        pinCounter++;
+        danos.push({
+            id: pinCounter,
+            ubicacion: vistaActual,
+            tipo_dano: tipo,
+            descripcion: desc,
+            coordenada_x: pendingClick.pctX,
+            coordenada_y: pendingClick.pctY
+        });
+
+        modal.style.display = 'none';
+        pendingClick = null;
+        renderPins();
+        renderDamageList();
+    });
+
+    // ── Cancelar modal ─────────────────────────────────────────
+    document.getElementById('btnCancelarDano').addEventListener('click', () => {
+        modal.style.display = 'none';
+        pendingClick = null;
+    });
+
+    document.getElementById('descripcionDanoInput').addEventListener('keydown', e => {
+        if (e.key === 'Enter') document.getElementById('btnConfirmarDano').click();
+        if (e.key === 'Escape') document.getElementById('btnCancelarDano').click();
+    });
+
+    // ── Renderizar pins ────────────────────────────────────────
+    function renderPins() {
+        container.querySelectorAll('.damage-pin').forEach(p => p.remove());
+
+        danos.filter(d => d.ubicacion === vistaActual).forEach(d => {
+            const pin = document.createElement('div');
+            pin.className = 'damage-pin';
+            pin.dataset.id = d.id;
+            pin.style.left = d.coordenada_x + '%';
+            pin.style.top = d.coordenada_y + '%';
+            pin.innerHTML = `${d.id}<span class="pin-tooltip">${d.tipo_dano}: ${d.descripcion}</span>`;
+
+            pin.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (confirm(`¿Eliminar daño #${d.id}?`)) {
+                    danos = danos.filter(x => x.id !== d.id);
+                    renderPins();
+                    renderDamageList();
+                }
+            });
+
+            container.appendChild(pin);
+        });
+    }
+
+    // ── Renderizar lista ───────────────────────────────────────
+    function renderDamageList() {
+        danoCount.textContent = danos.length;
+        damageList.style.display = danos.length ? 'block' : 'none';
+
+        const vistaLabel = {
+            frontal: 'Frontal',
+            trasero: 'Trasero',
+            lateral_izquierdo: 'Lat. Izq',
+            lateral_derecho: 'Lat. Der',
+            techo: 'Techo'
+        };
+
+        damageItems.innerHTML = danos.map(d => `
+            <div class="damage-list-item">
+                <span class="fw-bold" style="color:#888; font-size:0.8rem; min-width:20px">#${d.id}</span>
+                <span class="dano-vista">${vistaLabel[d.ubicacion] ?? d.ubicacion}</span>
+                <span class="dano-tipo">${d.tipo_dano}</span>
+                <span class="dano-desc">${d.descripcion}</span>
+                <button type="button" class="btn-remove-dano" onclick="removeDano(${d.id})" title="Eliminar">
+                    <i class="bi bi-trash3"></i>
+                </button>
+            </div>
+        `).join('');
+
+        syncDanosHidden();
+    }
+
+    // ── Eliminar daño desde la lista ───────────────────────────
+    window.removeDano = function (id) {
+        danos = danos.filter(d => d.id !== id);
+        renderPins();
+        renderDamageList();
+    };
+
+    // ── Sync con formulario ────────────────────────────────────
+    function syncDanosHidden() {
+        let hidden = document.getElementById('danosHidden');
+        if (!hidden) {
+            hidden = document.createElement('input');
+            hidden.type = 'hidden';
+            hidden.name = 'danos';
+            hidden.id = 'danosHidden';
+            document.getElementById('formularioOrden').appendChild(hidden);
+        }
+        hidden.value = JSON.stringify(danos);
+    }
+
+    // Init
+    syncDanosHidden();
+})();
 
 console.log('✅ Script nueva.js cargado correctamente');

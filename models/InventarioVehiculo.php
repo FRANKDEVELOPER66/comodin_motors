@@ -67,4 +67,5 @@ class InventarioVehiculo extends ActiveRecord
         $resultado = self::fetchArray($sql, [$id_orden]);
         return $resultado[0] ?? null;
     }
+    
 }

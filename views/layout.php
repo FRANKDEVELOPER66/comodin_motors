@@ -75,11 +75,11 @@
                         <i class="bi bi-chevron-down arrow"></i>
                     </a>
                     <ul class="submenu">
-                        <li><a href="/ordenes"><i class="bi bi-list-ul"></i> Ver todas</a></li>
-                        <li><a href="/ordenes/nueva"><i class="bi bi-plus-circle"></i> Nueva orden</a></li>
-                        <li><a href="/ordenes/pendientes"><i class="bi bi-clock-history"></i> Pendientes</a></li>
-                        <li><a href="/ordenes/proceso"><i class="bi bi-tools"></i> En proceso</a></li>
-                        <li><a href="/ordenes/completadas"><i class="bi bi-check-circle"></i> Completadas</a></li>
+                        <li><a href="/comodin_motors/orden"><i class="bi bi-list-ul"></i> Ver todas</a></li>
+                        <li><a href="/comodin_motors/orden/nueva"><i class="bi bi-plus-circle"></i> Nueva orden</a></li>
+                        <li><a href="/comodin_motors/orden/pendientes"><i class="bi bi-clock-history"></i> Pendientes</a></li>
+                        <li><a href="/comodin_motors/orden/proceso"><i class="bi bi-tools"></i> En proceso</a></li>
+                        <li><a href="/comodin_motors/orden/completadas"><i class="bi bi-check-circle"></i> Completadas</a></li>
                     </ul>
                 </li>
 

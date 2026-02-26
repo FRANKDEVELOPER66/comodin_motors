@@ -45,31 +45,30 @@ class OrdenController
     /**
      * Vista - Ver/editar orden
      */
+    /**
+     * Vista - Ver/editar orden
+     */
     public static function ver(Router $router)
     {
         $id_orden = $_GET['id'] ?? null;
 
         if (!$id_orden) {
-            header('Location: /ordenes');
+            header('Location: /comodin_motors/orden');
             return;
         }
 
         $orden = Orden::obtenerDetalleCompleto($id_orden);
 
         if (!$orden) {
-            header('Location: /ordenes');
+            header('Location: /comodin_motors/orden');
             return;
         }
 
-        $inventario = InventarioVehiculo::obtenerPorOrden($id_orden);
-        $danos = DanoVehiculo::obtenerPorOrden($id_orden);
         $tecnicos = Tecnico::obtenerActivos();
 
-        $router->render('ordenes/ver', [
-            'orden' => $orden,
-            'inventario' => $inventario,
-            'danos' => $danos,
-            'tecnicos' => $tecnicos
+        $router->render('orden/ver', [
+            'orden'     => $orden,
+            'tecnicos'  => $tecnicos
         ]);
     }
 
@@ -286,6 +285,9 @@ class OrdenController
 
             // 4. Guardar daños
             $danos = json_decode($_POST['danos'] ?? '[]', true);
+            // DEBUG TEMPORAL
+            error_log("JSON daños recibido: " . ($_POST['danos'] ?? 'VACÍO'));
+            error_log("Daños decodificados: " . count($danos ?? []));
             if (!empty($danos) && is_array($danos)) {
                 foreach ($danos as $dano_data) {
                     $dano_data['id_orden'] = $id_orden;

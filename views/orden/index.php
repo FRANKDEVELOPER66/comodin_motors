@@ -51,10 +51,25 @@
         font-size: 2rem;
     }
 
-    .stat-icon.pendiente { background: rgba(255, 193, 7, 0.2); color: #ffc107; }
-    .stat-icon.proceso { background: rgba(0, 123, 255, 0.2); color: #007bff; }
-    .stat-icon.completado { background: rgba(40, 167, 69, 0.2); color: #28a745; }
-    .stat-icon.entregado { background: rgba(0, 255, 0, 0.2); color: #00ff00; }
+    .stat-icon.pendiente {
+        background: rgba(255, 193, 7, 0.2);
+        color: #ffc107;
+    }
+
+    .stat-icon.proceso {
+        background: rgba(0, 123, 255, 0.2);
+        color: #007bff;
+    }
+
+    .stat-icon.completado {
+        background: rgba(40, 167, 69, 0.2);
+        color: #28a745;
+    }
+
+    .stat-icon.entregado {
+        background: rgba(0, 255, 0, 0.2);
+        color: #00ff00;
+    }
 
     .stat-info h3 {
         font-size: 2rem;
@@ -107,9 +122,9 @@
         overflow: hidden;
     }
 
-    #tablaOrdenes {
-        border-collapse: separate;
-        border-spacing: 0;
+    #tablaOrdenes tbody td {
+        color: #fff !important;
+        background: transparent;
     }
 
     #tablaOrdenes thead th {
@@ -124,13 +139,12 @@
     }
 
     #tablaOrdenes tbody tr {
-        transition: all 0.3s ease;
+        background: #1a1a1a;
         border-bottom: 1px solid #3a3a3a;
     }
 
     #tablaOrdenes tbody tr:hover {
         background: rgba(0, 255, 0, 0.05);
-        transform: scale(1.01);
     }
 
     #tablaOrdenes tbody td {
@@ -148,11 +162,30 @@
         display: inline-block;
     }
 
-    .badge-pendiente { background: rgba(255, 193, 7, 0.2); color: #ffc107; }
-    .badge-en_proceso { background: rgba(0, 123, 255, 0.2); color: #007bff; }
-    .badge-completado { background: rgba(40, 167, 69, 0.2); color: #28a745; }
-    .badge-entregado { background: rgba(0, 255, 0, 0.2); color: #00ff00; }
-    .badge-cancelado { background: rgba(220, 53, 69, 0.2); color: #dc3545; }
+    .badge-pendiente {
+        background: rgba(255, 193, 7, 0.2);
+        color: #ffc107;
+    }
+
+    .badge-en_proceso {
+        background: rgba(0, 123, 255, 0.2);
+        color: #007bff;
+    }
+
+    .badge-completado {
+        background: rgba(40, 167, 69, 0.2);
+        color: #28a745;
+    }
+
+    .badge-entregado {
+        background: rgba(0, 255, 0, 0.2);
+        color: #00ff00;
+    }
+
+    .badge-cancelado {
+        background: rgba(220, 53, 69, 0.2);
+        color: #dc3545;
+    }
 
     /* Botones de acción */
     .btn-acciones {
