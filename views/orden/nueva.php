@@ -1,5 +1,3 @@
-<?php echo "PRUEBA - LA VISTA CARGA"; ?>
-
 <style>
     /* Tabs de vistas */
     .vista-tabs {
@@ -583,7 +581,7 @@
         transform: translate(-50%, -50%) scale(1.2);
     }
 
-    @keyframes pulse {
+    @keyframes damagePulse {
 
         0%,
         100% {

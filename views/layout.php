@@ -18,7 +18,7 @@
         <div class="loader-container">
             <!-- Logo animado -->
             <div class="loader-logo">
-                <img src="<?= asset('./images/1.png') ?>" alt="Comodín Motors">
+                <img src="/comodin_motors/public/images/1.png" alt="Comodín Motors">
             </div>
 
             <!-- Animación de engranajes -->

@@ -62,7 +62,7 @@ body {
 
 .loader-logo {
     margin-bottom: 30px;
-    animation: pulse 2s infinite;
+    //animation: pulse 2s infinite;
     
     img {
         width: 120px;
@@ -71,7 +71,7 @@ body {
     }
 }
 
-@keyframes pulse {
+@keyframes loaderPulse {
     0%, 100% {
         transform: scale(1);
         filter: drop-shadow(0 0 20px $color-verde-neon);
