@@ -719,6 +719,111 @@
             margin-top: 2rem;
         }
     }
+
+    .fuel-drag-wrapper {
+        user-select: none;
+        margin-top: 0.5rem;
+    }
+
+    .fuel-track {
+        position: relative;
+        width: 100%;
+        height: 44px;
+        background: #1a1a1a;
+        border: 2px solid #3a3a3a;
+        border-radius: 22px;
+        cursor: pointer;
+        overflow: visible;
+    }
+
+    .fuel-fill {
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 100%;
+        border-radius: 20px;
+        background: linear-gradient(90deg, #ff4444 0%, #ffaa00 50%, #00ff00 100%);
+        background-size: 600px 100%;
+        /* fijo para que el gradiente no escale */
+        transition: width 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        pointer-events: none;
+    }
+
+    .fuel-thumb {
+        position: absolute;
+        top: 50%;
+        display: none; /* ← simplemente ocúltalo */
+        transform: translate(-50%, -50%);
+        width: 28px;
+        height: 28px;
+        background: #fff;
+        border: 3px solid #00ff00;
+        border-radius: 50%;
+        box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+        cursor: grab;
+        transition: left 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+            transform 0.2s ease,
+            box-shadow 0.2s ease;
+        z-index: 2;
+    }
+
+    .fuel-thumb:active,
+    .fuel-thumb.dragging {
+        cursor: grabbing;
+        transform: translate(-50%, -50%) scale(1.25);
+        box-shadow: 0 0 20px rgba(0, 255, 0, 0.8);
+    }
+
+    .fuel-snap-markers {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 0;
+        pointer-events: none;
+    }
+
+    .fuel-snap-dot {
+        width: 6px;
+        height: 6px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        flex-shrink: 0;
+        /* Posicionamos los 5 dots en los extremos y centro */
+    }
+
+    /* Primer y último dot en los bordes */
+    .fuel-snap-dot:first-child {
+        margin-left: 0px;
+    }
+
+    .fuel-snap-dot:last-child {
+        margin-right: 0px;
+    }
+
+    .fuel-labels {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 0.5rem;
+        font-size: 0.85rem;
+        color: #b0b0b0;
+        padding: 0 2px;
+    }
+
+    .fuel-value-display {
+        text-align: center;
+        margin-top: 0.5rem;
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #00ff00;
+        letter-spacing: 1px;
+        min-height: 1.5rem;
+        transition: all 0.2s ease;
+    }
 </style>
 
 <div class="orden-container">
@@ -948,22 +1053,33 @@
                                 <label for="nivel_combustible" class="form-label">
                                     <i class="bi bi-fuel-pump"></i> Nivel de combustible
                                 </label>
-                                <select name="nivel_combustible" id="nivel_combustible" class="form-select">
-                                    <option value="E">Vacío (E)</option>
-                                    <option value="1/4">1/4</option>
-                                    <option value="1/2" selected>1/2</option>
-                                    <option value="3/4">3/4</option>
-                                    <option value="F">Lleno (F)</option>
-                                </select>
-                                <div class="fuel-gauge mt-2">
-                                    <div class="fuel-level" id="fuelLevel" style="width: 50%"></div>
-                                </div>
-                                <div class="fuel-labels">
-                                    <span>E</span>
-                                    <span>1/4</span>
-                                    <span>1/2</span>
-                                    <span>3/4</span>
-                                    <span>F</span>
+                                <!-- Campo hidden que guarda el valor real para el form -->
+                                <input type="hidden" name="nivel_combustible" id="nivel_combustible" value="1/2">
+
+                                <!-- Barra drag con snap -->
+                                <div class="fuel-drag-wrapper">
+                                    <div class="fuel-track" id="fuelTrack">
+                                        <div class="fuel-fill" id="fuelFill"></div>
+                                        <div class="fuel-thumb" id="fuelThumb"></div>
+                                        <!-- Marcadores de snap -->
+                                        <div class="fuel-snap-markers">
+                                            <span class="fuel-snap-dot" data-index="0"></span>
+                                            <span class="fuel-snap-dot" data-index="1"></span>
+                                            <span class="fuel-snap-dot" data-index="2"></span>
+                                            <span class="fuel-snap-dot" data-index="3"></span>
+                                            <span class="fuel-snap-dot" data-index="4"></span>
+                                        </div>
+                                    </div>
+                                    <!-- Etiquetas -->
+                                    <div class="fuel-labels">
+                                        <span>E</span>
+                                        <span>1/4</span>
+                                        <span>1/2</span>
+                                        <span>3/4</span>
+                                        <span>F</span>
+                                    </div>
+                                    <!-- Valor actual visible -->
+                                    <div class="fuel-value-display" id="fuelValueDisplay">1/2</div>
                                 </div>
                             </div>
                             <div class="col-12 mb-3">

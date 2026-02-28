@@ -721,6 +721,139 @@ async function guardarOrden(e) {
         hidden.value = JSON.stringify(danos);
     }
 
+
+
+    // ============================================
+    // FUEL DRAG SLIDER
+    // ============================================
+    (function initFuelSlider() {
+        const STEPS = ['E', '1/4', '1/2', '3/4', 'F'];
+        const PERCENTAGES = [0, 25, 50, 75, 100]; // % de llenado visual
+
+        const track = document.getElementById('fuelTrack');
+        const fill = document.getElementById('fuelFill');
+        const thumb = document.getElementById('fuelThumb');
+        const hidden = document.getElementById('nivel_combustible');
+        const display = document.getElementById('fuelValueDisplay');
+
+        if (!track || !fill || !thumb || !hidden) return;
+
+        let currentIndex = 2; // arranca en 1/2
+        let isDragging = false;
+        let startX = 0;
+
+        function getSnapPositions() {
+            const w = track.offsetWidth;
+            return PERCENTAGES.map(p => (p / 100) * w);
+        }
+
+        function applyIndex(index, animate = true) {
+            currentIndex = Math.max(0, Math.min(4, index));
+            const positions = getSnapPositions();
+            const pos = positions[currentIndex];
+            const pct = PERCENTAGES[currentIndex];
+
+            if (!animate) {
+                fill.style.transition = 'none';
+                thumb.style.transition = 'none';
+            } else {
+                fill.style.transition = 'width 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)';
+                thumb.style.transition = 'left 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)';
+            }
+
+            fill.style.width = pct + '%';
+            thumb.style.left = pos + 'px';
+            hidden.value = STEPS[currentIndex];
+            display.textContent = STEPS[currentIndex];
+
+            // Color del display según nivel
+            const colors = ['#ff4444', '#ff8800', '#ffcc00', '#aaee00', '#00ff00'];
+            display.style.color = colors[currentIndex];
+
+            // Actualizar resumen si existe
+            const resumenCombustible = document.getElementById('resumen_combustible');
+            if (resumenCombustible) resumenCombustible.textContent = STEPS[currentIndex];
+        }
+
+        function getNearestIndex(x) {
+            const positions = getSnapPositions();
+            let nearest = 0;
+            let minDist = Infinity;
+            positions.forEach((pos, i) => {
+                const dist = Math.abs(x - pos);
+                if (dist < minDist) { minDist = dist; nearest = i; }
+            });
+            return nearest;
+        }
+
+        // Click directo en el track
+        track.addEventListener('click', (e) => {
+            if (isDragging) return;
+            const rect = track.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            applyIndex(getNearestIndex(x));
+        });
+
+        // Drag en el thumb
+        thumb.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            startX = e.clientX;
+            thumb.classList.add('dragging');
+            e.preventDefault();
+        });
+
+        // Touch support
+        thumb.addEventListener('touchstart', (e) => {
+            isDragging = true;
+            startX = e.touches[0].clientX;
+            thumb.classList.add('dragging');
+        }, { passive: true });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            const rect = track.getBoundingClientRect();
+            const x = Math.max(0, Math.min(e.clientX - rect.left, track.offsetWidth));
+            // Mover thumb libre mientras arrastra (sin snap)
+            fill.style.transition = 'none';
+            thumb.style.transition = 'none';
+            fill.style.width = (x / track.offsetWidth * 100) + '%';
+            thumb.style.left = x + 'px';
+        });
+
+        document.addEventListener('touchmove', (e) => {
+            if (!isDragging) return;
+            const rect = track.getBoundingClientRect();
+            const x = Math.max(0, Math.min(e.touches[0].clientX - rect.left, track.offsetWidth));
+            fill.style.transition = 'none';
+            thumb.style.transition = 'none';
+            fill.style.width = (x / track.offsetWidth * 100) + '%';
+            thumb.style.left = x + 'px';
+        }, { passive: true });
+
+        document.addEventListener('mouseup', (e) => {
+            if (!isDragging) return;
+            isDragging = false;
+            thumb.classList.remove('dragging');
+            const rect = track.getBoundingClientRect();
+            const x = Math.max(0, Math.min(e.clientX - rect.left, track.offsetWidth));
+            applyIndex(getNearestIndex(x)); // snap al soltar
+        });
+
+        document.addEventListener('touchend', (e) => {
+            if (!isDragging) return;
+            isDragging = false;
+            thumb.classList.remove('dragging');
+            const rect = track.getBoundingClientRect();
+            const x = Math.max(0, Math.min(e.changedTouches[0].clientX - rect.left, track.offsetWidth));
+            applyIndex(getNearestIndex(x));
+        });
+
+        // Init con 1/2
+        window.addEventListener('load', () => applyIndex(2, false));
+        // También por si el layout ya está listo
+        setTimeout(() => applyIndex(2, false), 50);
+    })();
+
     // Init
     syncDanosHidden();
 })();
