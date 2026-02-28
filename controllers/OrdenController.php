@@ -228,10 +228,10 @@ class OrdenController
             return
                 "<td colspan='{$span}' style='padding:0; border:1px solid {$GRIS_LINE}; vertical-align:top;'>" .
                 "<table width='100%' style='border-collapse:collapse;'>" .
-                "<tr><td style='background:{$GRIS_BG}; padding:3px 7px; font-size:12px;" .
+                "<tr><td style='background:{$GRIS_BG}; padding:3px 7px; font-size:16px;" .
                 "color:{$GRIS_SUV}; text-transform:uppercase; letter-spacing:0.8px;" .
                 "border-bottom:1px solid {$GRIS_LINE};'>{$label}</td></tr>" .
-                "<tr><td style='padding:5px 7px; font-size:16px; font-weight:bold; color:{$vc};'>{$value}</td></tr>" .
+                "<tr><td style='padding:5px 7px; font-size:20px; font-weight:bold; color:{$vc};'>{$value}</td></tr>" .
                 "</table></td>";
         };
 
@@ -258,10 +258,10 @@ class OrdenController
                 $serviciosRows .=
                     "<tr style='background:{$rowBg};'>" .
                     "<td style='padding:7px 8px; border:1px solid {$GRIS_LINE}; text-align:center; font-size:16px; color:{$GRIS_SUV}; width:4%;'>" . ($i + 1) . "</td>" .
-                    "<td style='padding:7px 10px; border:1px solid {$GRIS_LINE}; font-size:12px; color:{$NEGRO}; width:52%;'>" . htmlspecialchars($s['descripcion'] ?? '') . "</td>" .
-                    "<td style='padding:7px 8px; border:1px solid {$GRIS_LINE}; text-align:center; font-size:12px; color:{$NEGRO}; width:10%;'>" . intval($s['cantidad'] ?? 1) . "</td>" .
-                    "<td style='padding:7px 8px; border:1px solid {$GRIS_LINE}; text-align:right; font-size:12px; color:{$GRIS_MED}; width:17%;'>Q " . number_format(floatval($s['costo'] ?? 0), 2) . "</td>" .
-                    "<td style='padding:7px 10px; border:1px solid {$GRIS_LINE}; text-align:right; font-size:12px; font-weight:bold; color:{$VERDE}; width:17%;'>Q " . number_format($sub, 2) . "</td>" .
+                    "<td style='padding:7px 10px; border:1px solid {$GRIS_LINE}; font-size:18px; color:{$NEGRO}; width:52%;'>" . htmlspecialchars($s['descripcion'] ?? '') . "</td>" .
+                    "<td style='padding:7px 8px; border:1px solid {$GRIS_LINE}; text-align:center; font-size:16px; color:{$NEGRO}; width:10%;'>" . intval($s['cantidad'] ?? 1) . "</td>" .
+                    "<td style='padding:7px 8px; border:1px solid {$GRIS_LINE}; text-align:right; font-size:16px; color:{$GRIS_MED}; width:17%;'>Q " . number_format(floatval($s['costo'] ?? 0), 2) . "</td>" .
+                    "<td style='padding:7px 10px; border:1px solid {$GRIS_LINE}; text-align:right; font-size:18px; font-weight:bold; color:{$VERDE}; width:17%;'>Q " . number_format($sub, 2) . "</td>" .
                     "</tr>";
             }
         } else {
@@ -297,12 +297,12 @@ class OrdenController
                 foreach ($presentes as $item) {
                     $chips .= "<span style='display:inline-block; background:{$VERDE_CLARO}; color:{$VERDE};" .
                         "border:1px solid #86efac; padding:4px 12px; margin:3px 4px;" .
-                        "font-size:10px; font-weight:bold;'>&#10003; &nbsp;{$item}</span>";
+                        "font-size:15px; font-weight:bold;'>&#10003; &nbsp;{$item}</span>";
                 }
                 if (!empty($inventario['otros'])) {
                     $chips .= "<span style='display:inline-block; background:{$GRIS_BG}; color:{$GRIS_MED};" .
                         "border:1px solid {$GRIS_LINE}; padding:4px 12px; margin:3px 4px;" .
-                        "font-size:10px;'>+ " . htmlspecialchars($inventario['otros']) . "</span>";
+                        "font-size:15px;'>+ " . htmlspecialchars($inventario['otros']) . "</span>";
                 }
                 $inventarioSeccion =
                     "<div style='margin-bottom:22px;'>" .
@@ -413,8 +413,8 @@ class OrdenController
                         "text-align:center; line-height:20px;'>{$num}</span></td>" .
                         "<td style='padding:4px 6px; border-bottom:1px solid {$GRIS_LINE}; width:85px;'>" .
                         "<span style='background:{$hexCol}22; color:{$hexCol}; border:1px solid {$hexCol};" .
-                        "padding:2px 6px; font-size:8px; font-weight:bold; text-transform:uppercase;'>{$tipLbl}</span></td>" .
-                        "<td style='padding:4px 6px; border-bottom:1px solid {$GRIS_LINE}; font-size:10px; color:{$NEGRO};'>{$desc}</td>" .
+                        "padding:2px 6px; font-size:10px; font-weight:bold; text-transform:uppercase;'>{$tipLbl}</span></td>" .
+                        "<td style='padding:4px 6px; border-bottom:1px solid {$GRIS_LINE}; font-size:12px; color:{$NEGRO};'>{$desc}</td>" .
                         "</tr>";
                 }
                 $leyenda .= "</table>";
@@ -432,7 +432,7 @@ class OrdenController
                 $cols .=
                     "<div style='width:25%; display:inline-block; vertical-align:top; margin:0 1%;'>" .
                     "<div style='background:{$GRIS_BG}; border:1px solid {$GRIS_LINE}; border-bottom:none;" .
-                    "padding:5px 8px; font-size:8px; font-weight:bold; color:{$GRIS_MED};" .
+                    "padding:5px 8px; font-size:18px; font-weight:bold; color:{$GRIS_MED};" .
                     "text-transform:uppercase; letter-spacing:1px;'>" . $v['label'] . "</div>" .
                     "<div style='border:1px solid {$GRIS_LINE}; padding:6px; background:{$BLANCO};'>" .
                     $v['imgBloque'] .
@@ -501,21 +501,21 @@ HTML;
             "<td style='vertical-align:middle; padding-right:12px;'>{$logoHtml}</td>" .
             "<td style='vertical-align:middle; border-left:2px solid {$VERDE}; padding-left:12px;'>" .
             "<div style='color:{$BLANCO}; font-size:28px; font-weight:bold; letter-spacing:3px; text-transform:uppercase;'>COMODIN MOTORS</div>" .
-            "<div style='color:{$GRIS_LINE}; font-size:14px; letter-spacing:2px; margin-top:3px; text-transform:uppercase;'>Taller Mecánico Automotriz &nbsp;·&nbsp; Servicio de Calidad</div>" .
+            "<div style='color:{$GRIS_LINE}; font-size:14px; letter-spacing:2px; margin-top:3px; text-transform:uppercase;'>Centro Automotriz &nbsp;·&nbsp; Calidad que Impulsa tu Confianza</div>" .
             "</td></tr></table></td>" .
             "<td style='background:{$VERDE}; padding:14px 20px; width:40%; vertical-align:middle; text-align:right;'>" .
             "<div style='color:{$BLANCO}; font-size:18px; text-transform:uppercase; letter-spacing:2px; margin-bottom:4px;'>Orden de Servicio</div>" .
             "<div style='color:{$BLANCO}; font-size:26px; font-weight:bold; letter-spacing:2px;'>#{$numero}</div>" .
-            "<div style='margin-top:8px;'><span style='background:{$estBg}; color:{$estColor}; padding:3px 14px; font-size:9px; font-weight:bold; text-transform:uppercase;'>{$estLabel}</span></div>" .
+            "<div style='margin-top:8px;'><span style='background:{$estBg}; color:{$estColor}; padding:3px 14px; font-size:14px; font-weight:bold; text-transform:uppercase;'>{$estLabel}</span></div>" .
             "</td></tr><tr>" .
             "<td colspan='2' style='background:{$GRIS_OSC}; padding:5px 20px;'>" .
             "<table width='100%' style='border-collapse:collapse;'><tr>" .
-            "<td style='color:{$GRIS_LINE}; font-size:14px;'>" .
+            "<td style='color:{$GRIS_LINE}; font-size:18px;'>" .
             "FECHA: <b style='color:{$BLANCO};'>{$fecha}</b> &nbsp;&nbsp; " .
             "HORA: <b style='color:{$BLANCO};'>{$hora}</b> &nbsp;&nbsp; " .
-            "GRÚA: <b style='color:{$BLANCO};'>{$grua}</b>" .
+            "INGRESÓ EN GRÚA: <b style='color:{$BLANCO};'>{$grua}</b>" .
             "</td>" .
-            "<td style='text-align:right; color:{$GRIS_LINE}; font-size:9px;'>" .
+            "<td style='text-align:right; color:{$GRIS_LINE}; font-size:16px;'>" .
             "PRÓXIMO SERVICIO: <b style='color:{$VERDE};'>{$proxKm}</b>" .
             "</td></tr></table></td></tr></table>";
 
@@ -527,12 +527,12 @@ HTML;
         // CLIENTE / VEHÍCULO
         $html .=
             "<table width='100%' style='border-collapse:collapse; margin-bottom:18px;'><tr>" .
-            "<td colspan='4' style='background:{$NEGRO}; border-left:6px solid {$VERDE}; padding:6px 12px; font-size:16px; font-weight:bold; color:{$BLANCO}; text-transform:uppercase; letter-spacing:1.5px;'>Datos del Cliente</td>" .
+            "<td colspan='4' style='background:{$NEGRO}; border-left:6px solid {$VERDE}; padding:6px 12px; font-size:18px; font-weight:bold; color:{$BLANCO}; text-transform:uppercase; letter-spacing:1.5px;'>Datos del Cliente</td>" .
             "<td style='width:10px; padding:0;'></td>" .
-            "<td colspan='4' style='background:{$NEGRO}; border-left:6px solid {$VERDE}; padding:6px 12px; font-size:16px; font-weight:bold; color:{$BLANCO}; text-transform:uppercase; letter-spacing:1.5px;'>Datos del Vehículo</td>" .
+            "<td colspan='4' style='background:{$NEGRO}; border-left:6px solid {$VERDE}; padding:6px 12px; font-size:18px; font-weight:bold; color:{$BLANCO}; text-transform:uppercase; letter-spacing:1.5px;'>Datos del Vehículo</td>" .
             "</tr><tr>" .
             $cel('Nombre', $clienteNombre, 2) . $cel('Teléfono', $clienteTelefono, 2) .
-            "<td style='width:10px; padding:0;'></td>" .
+            "<td style='width:14px; padding:0;'></td>" .
             $cel('Vehículo', $vehiculo, 2) . $cel('Color', $color) . $cel('Placas', $placas, 1, $VERDE) .
             "</tr><tr>" .
             $cel('Empresa', $clienteEmpresa, 2) . $cel('Dirección', $clienteDireccion, 2) .
@@ -547,7 +547,7 @@ HTML;
         $html .=
             "<div style='margin-bottom:18px;'>" . $secTit('', 'Trabajo a Realizar') .
             "<table width='100%' style='border-collapse:collapse;'><tr>" .
-            "<td style='border:1px solid {$GRIS_LINE}; padding:10px 12px; font-size:11px; line-height:1.8;'>{$trabajo}</td>" .
+            "<td style='border:1px solid {$GRIS_LINE}; padding:10px 12px; font-size:18px; line-height:1.8;'>{$trabajo}</td>" .
             "</tr>{$obsBloque}</table></div>";
 
         // SERVICIOS
@@ -555,15 +555,15 @@ HTML;
             "<div style='margin-bottom:22px;'>" . $secTit('', 'Servicios y Repuestos') .
             "<table width='100%' style='border-collapse:collapse;'>" .
             "<thead><tr style='background:{$GRIS_BG};'>" .
-            "<th style='padding:8px; border:1px solid {$GRIS_LINE}; font-size:9px; color:{$GRIS_MED}; width:4%; text-align:center; text-transform:uppercase;'>#</th>" .
-            "<th style='padding:8px 10px; border:1px solid {$GRIS_LINE}; font-size:9px; color:{$GRIS_MED}; width:52%; text-align:left; text-transform:uppercase;'>Descripción</th>" .
-            "<th style='padding:8px; border:1px solid {$GRIS_LINE}; font-size:9px; color:{$GRIS_MED}; width:10%; text-align:center; text-transform:uppercase;'>Cant.</th>" .
-            "<th style='padding:8px; border:1px solid {$GRIS_LINE}; font-size:9px; color:{$GRIS_MED}; width:17%; text-align:right; text-transform:uppercase;'>P. Unit.</th>" .
-            "<th style='padding:8px 10px; border:1px solid {$GRIS_LINE}; font-size:9px; color:{$GRIS_MED}; width:17%; text-align:right; text-transform:uppercase;'>Subtotal</th>" .
+            "<th style='padding:8px; border:1px solid {$GRIS_LINE}; font-size:15px; color:{$GRIS_MED}; width:4%; text-align:center; text-transform:uppercase;'>#</th>" .
+            "<th style='padding:8px 10px; border:1px solid {$GRIS_LINE}; font-size:15px; color:{$GRIS_MED}; width:52%; text-align:left; text-transform:uppercase;'>Descripción</th>" .
+            "<th style='padding:8px; border:1px solid {$GRIS_LINE}; font-size:15px; color:{$GRIS_MED}; width:10%; text-align:center; text-transform:uppercase;'>Cant.</th>" .
+            "<th style='padding:8px; border:1px solid {$GRIS_LINE}; font-size:15px; color:{$GRIS_MED}; width:17%; text-align:right; text-transform:uppercase;'>P. Unit.</th>" .
+            "<th style='padding:8px 10px; border:1px solid {$GRIS_LINE}; font-size:15px; color:{$GRIS_MED}; width:17%; text-align:right; text-transform:uppercase;'>Subtotal</th>" .
             "</tr></thead><tbody>{$serviciosRows}</tbody>" .
             "<tfoot><tr>" .
-            "<td colspan='4' style='padding:10px; border:1px solid {$GRIS_LINE}; text-align:right; background:{$GRIS_BG}; font-size:11px; font-weight:bold; text-transform:uppercase;'>Total a Pagar:</td>" .
-            "<td style='padding:10px; border:2px solid {$VERDE}; text-align:right; background:{$VERDE_CLARO}; font-size:15px; font-weight:bold; color:{$VERDE};'>Q {$totalFinal}</td>" .
+            "<td colspan='4' style='padding:10px; border:1px solid {$GRIS_LINE}; text-align:right; background:{$GRIS_BG}; font-size:17px; font-weight:bold; text-transform:uppercase;'>Total a Pagar:</td>" .
+            "<td style='padding:10px; border:2px solid {$VERDE}; text-align:right; background:{$VERDE_CLARO}; font-size:19px; font-weight:bold; color:{$VERDE};'>Q {$totalFinal}</td>" .
             "</tr></tfoot></table></div>";
 
         $html .= $inventarioSeccion;
@@ -571,29 +571,27 @@ HTML;
 
         // FIRMAS
         $html .=
-            "<table width='100%' style='border-collapse:collapse; border-top:3px solid {$NEGRO}; margin-top:16px;'><tr>" .
-            "<td width='46%' style='padding:20px 16px 0 0;'>" .
+            "<table width='100%' style='border-collapse:collapse; margin-top:80px;'><tr>" .
+            "<td width='50%' style='padding:130px 16px 0 0;'>" .
             "<div style='height:50px; border-bottom:1px solid {$GRIS_MED};'></div>" .
-            "<div style='font-size:9px; color:{$GRIS_MED}; text-transform:uppercase; margin-top:5px;'>Firma y nombre del cliente</div>" .
-            "<div style='font-size:10px; font-weight:bold; margin-top:2px;'>{$clienteNombre}</div></td>" .
-            "<td width='8%' style='text-align:center;'>" .
-            "<div style='border-left:2px dashed {$GRIS_LINE}; height:70px; margin:auto;'></div></td>" .
-            "<td width='46%' style='padding:20px 0 0 16px;'>" .
+            "<div style='font-size:18px; color:{$GRIS_MED}; text-transform:uppercase; margin-top:5px;'>Firma y nombre del cliente</div>" .
+            "<div style='font-size:18px; font-weight:bold; margin-top:2px;'>{$clienteNombre}</div></td>" .
+            "<td width='50%' style='padding:130px 0 0 16px;'>" .
             "<div style='height:50px; border-bottom:1px solid {$GRIS_MED};'></div>" .
-            "<div style='font-size:9px; color:{$GRIS_MED}; text-transform:uppercase; margin-top:5px;'>Firma del técnico / Recibido</div>" .
-            "<div style='font-size:10px; font-weight:bold; margin-top:2px;'>Comodín Motors</div></td>" .
+            "<div style='font-size:18px; color:{$GRIS_MED}; text-transform:uppercase; margin-top:5px;'>Firma del técnico / Recibido</div>" .
+            "<div style='font-size:20px; font-weight:bold; margin-top:2px;'>Carlos Emilio Urízar</div></td>" .
             "</tr></table>";
 
         // AVISO + PIE
         $fechaGen = date('d/m/Y H:i');
         $html .=
             "<div style='margin-top:16px; background:{$AMBAR_BG}; border:1px solid #fde68a; border-left:4px solid #f59e0b; padding:8px 12px;'>" .
-            "<span style='font-size:9px; color:{$AMBAR};'><b>AVISO:</b> Los daños preexistentes fueron verificados al momento del ingreso. " .
+            "<span style='font-size:20px; color:{$AMBAR};'><b>AVISO:</b> Los daños preexistentes fueron verificados al momento del ingreso. " .
             "Comodín Motors no se responsabiliza por daños no reportados en esta orden. " .
             "Tiempo de entrega sujeto a disponibilidad de repuestos.</span></div>" .
             "<table width='100%' style='margin-top:10px; border-top:1px solid {$GRIS_LINE}; padding-top:6px;'><tr>" .
-            "<td style='font-size:8.5px; color:{$GRIS_SUV};'>Generado: {$fechaGen} &nbsp;·&nbsp; Comodín Motors</td>" .
-            "<td style='text-align:right; font-size:8.5px; color:{$GRIS_SUV};'>Orden #{$numero} &nbsp;·&nbsp; Sistema de Gestión de Órdenes</td>" .
+            "<td style='font-size:13px; color:{$GRIS_SUV};'>Generado: {$fechaGen} &nbsp;·&nbsp; Comodín Motors</td>" .
+            "<td style='text-align:right; font-size:13px; color:{$GRIS_SUV};'>Orden #{$numero} &nbsp;·&nbsp; Sistema de Gestión de Órdenes</td>" .
             "</tr></table>";
 
         $html .= '</body></html>';
