@@ -1,17 +1,5 @@
 <?php
-// Obtener servicios, inventario y daños de la orden
-use Model\ServicioRealizado;
-use Model\InventarioVehiculo;
-use Model\DanoVehiculo;
-
-$servicios = ServicioRealizado::obtenerPorOrden($orden['id_orden'] ?? 0);
-$inventario = InventarioVehiculo::obtenerPorOrden($orden['id_orden'] ?? 0);
-$danos = DanoVehiculo::obtenerPorOrden($orden['id_orden'] ?? 0);
-// DEBUG TEMPORAL
-error_log("ID orden: " . ($orden['id_orden'] ?? 'NULL'));
-error_log("Daños encontrados: " . count($danos));
-error_log(print_r($danos, true));
-
+// Variables de presentación — los datos vienen del controlador
 $estadoClass = [
     'pendiente'  => 'estado-pendiente',
     'en_proceso' => 'estado-proceso',
@@ -26,21 +14,27 @@ $estadoLabel = [
     'cancelado'  => 'Cancelado',
 ][$orden['estado_orden'] ?? 'pendiente'] ?? 'Pendiente';
 
-// Config de vistas para daños
 $vistas = [
-    'frontal'           => ['label' => 'Frontal',       'icon' => 'bi-arrow-up-circle',    'img' => '/comodin_motors/public/images/front.png'],
-    'trasero'           => ['label' => 'Trasero',       'icon' => 'bi-arrow-down-circle',  'img' => '/comodin_motors/public/images/back.png'],
-    'lateral_izquierdo' => ['label' => 'Lat. Izquierdo', 'icon' => 'bi-arrow-left-circle',  'img' => '/comodin_motors/public/images/left.png'],
-    'lateral_derecho'   => ['label' => 'Lat. Derecho',  'icon' => 'bi-arrow-right-circle', 'img' => '/comodin_motors/public/images/right.png'],
-    'techo'             => ['label' => 'Techo',         'icon' => 'bi-arrow-up-square',    'img' => '/comodin_motors/public/images/top.png'],
+    'frontal'           => ['label' => 'Frontal',         'icon' => 'bi-arrow-up-circle',    'img' => '/comodin_motors/public/images/front.png'],
+    'trasero'           => ['label' => 'Trasero',         'icon' => 'bi-arrow-down-circle',  'img' => '/comodin_motors/public/images/back.png'],
+    'lateral_izquierdo' => ['label' => 'Lat. Izquierdo',  'icon' => 'bi-arrow-left-circle',  'img' => '/comodin_motors/public/images/left.png'],
+    'lateral_derecho'   => ['label' => 'Lat. Derecho',    'icon' => 'bi-arrow-right-circle', 'img' => '/comodin_motors/public/images/right.png'],
+    'techo'             => ['label' => 'Techo',           'icon' => 'bi-arrow-up-square',    'img' => '/comodin_motors/public/images/top.png'],
 ];
 
 $danosPorVista = [];
 foreach ($danos as $d) {
     $danosPorVista[$d['ubicacion']][] = $d;
 }
-$vistasConDanos = array_keys($danosPorVista);
-$primeraVista   = $vistasConDanos[0] ?? 'frontal';
+$primeraVista = array_key_first($danosPorVista) ?? 'frontal';
+
+$danosJson = !empty($danos) ? json_encode(array_map(fn($d) => [
+    'ubicacion'   => $d['ubicacion']   ?? 'frontal',
+    'tipo_dano'   => $d['tipo_dano']   ?? 'otro',
+    'descripcion' => $d['descripcion'] ?? '',
+    'x'           => floatval($d['coordenada_x'] ?? 0),
+    'y'           => floatval($d['coordenada_y'] ?? 0),
+], $danos), JSON_UNESCAPED_UNICODE | JSON_HEX_APOS | JSON_HEX_QUOT) : '[]';
 ?>
 
 <style>
@@ -188,7 +182,6 @@ $primeraVista   = $vistasConDanos[0] ?? 'frontal';
         color: #00ff00;
     }
 
-    /* Tabla servicios */
     .tabla-servicios {
         width: 100%;
         border-collapse: collapse;
@@ -230,7 +223,6 @@ $primeraVista   = $vistasConDanos[0] ?? 'frontal';
         font-size: 1.1rem;
     }
 
-    /* Inventario */
     .inv-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
@@ -258,7 +250,6 @@ $primeraVista   = $vistasConDanos[0] ?? 'frontal';
         text-decoration: line-through;
     }
 
-    /* Acciones */
     .btn-accion {
         padding: 0.6rem 1.25rem;
         border-radius: 10px;
@@ -338,7 +329,7 @@ $primeraVista   = $vistasConDanos[0] ?? 'frontal';
         transition: width 0.5s;
     }
 
-    /* ── DAÑOS ── */
+    /* DAÑOS */
     .ver-vista-tabs {
         display: flex;
         gap: 0.5rem;
@@ -523,8 +514,7 @@ $primeraVista   = $vistasConDanos[0] ?? 'frontal';
             <div class="d-flex align-items-center gap-3 flex-wrap">
                 <span class="estado-badge <?= $estadoClass ?>"><?= $estadoLabel ?></span>
                 <div class="d-flex gap-2">
-                    <a href="/comodin_motors/orden/pdf?id=<?= $orden['id_orden'] ?>"
-                        class="btn-accion btn-outline" target="_blank">
+                    <a href="/comodin_motors/orden/pdf?id=<?= $orden['id_orden'] ?>" class="btn-accion btn-outline" target="_blank">
                         <i class="bi bi-file-earmark-pdf"></i> Ver PDF
                     </a>
                     <a href="/comodin_motors/orden" class="btn-accion btn-outline">
@@ -535,6 +525,7 @@ $primeraVista   = $vistasConDanos[0] ?? 'frontal';
         </div>
 
         <div class="row">
+
             <!-- COLUMNA IZQUIERDA -->
             <div class="col-lg-8">
 
@@ -570,7 +561,7 @@ $primeraVista   = $vistasConDanos[0] ?? 'frontal';
                             <div class="info-card-title"><i class="bi bi-car-front"></i> Vehículo</div>
                             <div class="info-row">
                                 <span class="info-label">Vehículo</span>
-                                <span class="info-value"><?= htmlspecialchars(($orden['marca'] ?? '') . ' ' . ($orden['modelo'] ?? '') . ' ' . ($orden['anio'] ?? '')) ?></span>
+                                <span class="info-value"><?= htmlspecialchars(trim(($orden['marca'] ?? '') . ' ' . ($orden['modelo'] ?? '') . ' ' . ($orden['anio'] ?? ''))) ?></span>
                             </div>
                             <div class="info-row">
                                 <span class="info-label">Color</span>
@@ -636,7 +627,7 @@ $primeraVista   = $vistasConDanos[0] ?? 'frontal';
                                             <td><?= htmlspecialchars($s['descripcion'] ?? '') ?></td>
                                             <td><?= $s['cantidad'] ?? 1 ?></td>
                                             <td>Q <?= number_format(floatval($s['costo'] ?? 0), 2) ?></td>
-                                            <td>Q <?= number_format(floatval($s['subtotal'] ?? ($s['costo'] * $s['cantidad'])), 2) ?></td>
+                                            <td>Q <?= number_format(floatval($s['subtotal'] ?? (floatval($s['costo'] ?? 0) * intval($s['cantidad'] ?? 1))), 2) ?></td>
                                         </tr>
                                     <?php endforeach; ?>
                                 </tbody>
@@ -660,18 +651,18 @@ $primeraVista   = $vistasConDanos[0] ?? 'frontal';
                         <div class="inv-grid">
                             <?php
                             $items = [
-                                'gato' => 'Gato',
-                                'herramientas' => 'Herramientas',
-                                'triangulos' => 'Triángulos',
-                                'tapetes' => 'Tapetes',
+                                'gato'             => 'Gato',
+                                'herramientas'     => 'Herramientas',
+                                'triangulos'       => 'Triángulos',
+                                'tapetes'          => 'Tapetes',
                                 'llanta_refaccion' => 'Llanta refacción',
-                                'extintor' => 'Extintor',
-                                'antena' => 'Antena',
-                                'emblemas' => 'Emblemas',
-                                'tapones_rueda' => 'Tapones rueda',
-                                'cables' => 'Cables',
-                                'estereo' => 'Estéreo',
-                                'encendedor' => 'Encendedor'
+                                'extintor'         => 'Extintor',
+                                'antena'           => 'Antena',
+                                'emblemas'         => 'Emblemas',
+                                'tapones_rueda'    => 'Tapones rueda',
+                                'cables'           => 'Cables',
+                                'estereo'          => 'Estéreo',
+                                'encendedor'       => 'Encendedor',
                             ];
                             foreach ($items as $key => $label):
                                 $presente = !empty($inventario[$key]) && $inventario[$key] == 1;
@@ -719,7 +710,10 @@ $primeraVista   = $vistasConDanos[0] ?? 'frontal';
 
                         <!-- Imagen con pins -->
                         <div class="ver-diagram-wrapper">
-                            <div class="ver-diagram-container" id="verDiagramContainer">
+                            <div class="ver-diagram-container"
+                                id="verDiagramContainer"
+                                data-danos='<?= $danosJson ?>'
+                                data-vista="<?= $primeraVista ?>">
                                 <img id="verCarImage"
                                     src="<?= $vistas[$primeraVista]['img'] ?>"
                                     alt="Vista <?= $vistas[$primeraVista]['label'] ?>"
@@ -732,7 +726,8 @@ $primeraVista   = $vistasConDanos[0] ?? 'frontal';
 
                         <!-- Lista de daños de la vista activa -->
                         <div id="verDamageList" class="mt-3"></div>
-                    </div>
+
+                    </div><!-- fin section-card daños -->
                 <?php endif; ?>
 
             </div><!-- fin col-lg-8 -->
@@ -767,172 +762,55 @@ $primeraVista   = $vistasConDanos[0] ?? 'frontal';
                     <!-- Cambiar estado -->
                     <div class="mt-4">
                         <div class="info-label mb-2">Cambiar Estado:</div>
-                        <div class="d-grid gap-2">
-                            <?php if (($orden['estado_orden'] ?? '') !== 'en_proceso'): ?>
-                                <button class="btn-accion btn-blue w-100 justify-content-center"
-                                    onclick="cambiarEstado(<?= $orden['id_orden'] ?>, 'en_proceso')">
-                                    <i class="bi bi-play-circle"></i> Marcar En Proceso
-                                </button>
-                            <?php endif; ?>
-                            <?php if (($orden['estado_orden'] ?? '') !== 'completado'): ?>
-                                <button class="btn-accion btn-green w-100 justify-content-center"
-                                    onclick="cambiarEstado(<?= $orden['id_orden'] ?>, 'completado')">
-                                    <i class="bi bi-check-circle"></i> Marcar Completada
-                                </button>
-                            <?php endif; ?>
-                            <?php if (($orden['estado_orden'] ?? '') !== 'cancelado'): ?>
-                                <button class="btn-accion btn-danger w-100 justify-content-center"
-                                    onclick="cambiarEstado(<?= $orden['id_orden'] ?>, 'cancelado')">
-                                    <i class="bi bi-x-circle"></i> Cancelar Orden
-                                </button>
-                            <?php endif; ?>
+                        <div class="d-grid gap-2"><!-- Cambiar estado -->
+                            <div class="mt-4">
+                                <div class="info-label mb-2">Cambiar Estado:</div>
+                                <div class="d-grid gap-2">
+
+                                    <?php if ($orden['estado_orden'] === 'pendiente'): ?>
+                                        <button class="btn-accion btn-blue w-100 justify-content-center"
+                                            onclick="cambiarEstado(<?= $orden['id_orden'] ?>, 'en_proceso')">
+                                            <i class="bi bi-play-circle"></i> Marcar En Proceso
+                                        </button>
+
+                                    <?php elseif ($orden['estado_orden'] === 'en_proceso'): ?>
+                                        <button class="btn-accion btn-green w-100 justify-content-center"
+                                            onclick="cambiarEstado(<?= $orden['id_orden'] ?>, 'completado')">
+                                            <i class="bi bi-check-circle"></i> Marcar Completada
+                                        </button>
+
+                                    <?php elseif ($orden['estado_orden'] === 'completado'): ?>
+                                        <button class="btn-accion btn-green w-100 justify-content-center"
+                                            onclick="cambiarEstado(<?= $orden['id_orden'] ?>, 'entregado')">
+                                            <i class="bi bi-box-arrow-right"></i> Entregar Vehículo
+                                        </button>
+                                    <?php endif; ?>
+
+                                    <?php if (!in_array($orden['estado_orden'], ['cancelado', 'entregado'])): ?>
+                                        <button class="btn-accion btn-danger w-100 justify-content-center"
+                                            onclick="cambiarEstado(<?= $orden['id_orden'] ?>, 'cancelado')">
+                                            <i class="bi bi-x-circle"></i> Cancelar Orden
+                                        </button>
+                                    <?php endif; ?>
+
+                                </div>
+                            </div>
+
+                            <div class="mt-3 d-grid gap-2">
+                                <a href="/comodin_motors/orden/pdf?id=<?= $orden['id_orden'] ?>"
+                                    class="btn-accion btn-outline w-100 justify-content-center text-decoration-none" target="_blank">
+                                    <i class="bi bi-file-earmark-pdf"></i> Ver PDF
+                                </a>
+                                <a href="/comodin_motors/orden/nueva"
+                                    class="btn-accion btn-outline w-100 justify-content-center text-decoration-none">
+                                    <i class="bi bi-plus-circle"></i> Nueva Orden
+                                </a>
+                            </div>
                         </div>
-                    </div>
+                    </div><!-- fin col-lg-4 -->
 
-                    <div class="mt-3 d-grid gap-2">
-                        <a href="/comodin_motors/orden/pdf?id=<?= $orden['id_orden'] ?>"
-                            class="btn-accion btn-outline w-100 justify-content-center text-decoration-none" target="_blank">
-                            <i class="bi bi-file-earmark-pdf"></i> Ver PDF
-                        </a>
-                        <a href="/comodin_motors/orden/nueva" class="btn-accion btn-outline w-100 justify-content-center text-decoration-none">
-                            <i class="bi bi-plus-circle"></i> Nueva Orden
-                        </a>
-                    </div>
-                </div>
-            </div>
+                </div><!-- fin row -->
+            </div><!-- fin container-fluid -->
+        </div><!-- fin ver-orden -->
 
-        </div><!-- fin row -->
-    </div>
-</div>
-
-<script>
-    // ── DAÑOS: tabs + pins ────────────────────────────────────────
-    <?php if (!empty($danos)): ?>
-            (function() {
-                const todosLosDanos = <?= json_encode(array_map(fn($d) => [
-                                            'ubicacion'   => $d['ubicacion']   ?? 'frontal',
-                                            'tipo_dano'   => $d['tipo_dano']   ?? 'otro',
-                                            'descripcion' => $d['descripcion'] ?? '',
-                                            'x'           => floatval($d['coordenada_x'] ?? 0),
-                                            'y'           => floatval($d['coordenada_y'] ?? 0),
-                                        ], $danos), JSON_UNESCAPED_UNICODE) ?>;
-
-                const container = document.getElementById('verDiagramContainer');
-                const carImage = document.getElementById('verCarImage');
-                const damageList = document.getElementById('verDamageList');
-                let vistaActual = '<?= $primeraVista ?>';
-
-                // Cambio de tab
-                document.querySelectorAll('.ver-vista-tab').forEach(tab => {
-                    tab.addEventListener('click', () => {
-                        document.querySelectorAll('.ver-vista-tab').forEach(t => t.classList.remove('active'));
-                        tab.classList.add('active');
-                        vistaActual = tab.dataset.vista;
-
-                        carImage.style.opacity = '0';
-                        setTimeout(() => {
-                            carImage.src = tab.dataset.img;
-                            carImage.style.opacity = '1';
-                        }, 150);
-
-                        renderPins();
-                        renderList();
-                    });
-                });
-
-                function renderPins() {
-                    container.querySelectorAll('.ver-damage-pin').forEach(p => p.remove());
-                    todosLosDanos
-                        .filter(d => d.ubicacion === vistaActual)
-                        .forEach((d, i) => {
-                            const pin = document.createElement('div');
-                            pin.className = 'ver-damage-pin';
-                            pin.style.left = d.x + '%';
-                            pin.style.top = d.y + '%';
-                            pin.innerHTML = `${i + 1}<span class="ver-pin-tooltip">${d.tipo_dano}: ${d.descripcion}</span>`;
-                            container.appendChild(pin);
-                        });
-                }
-
-                function renderList() {
-                    const filtrados = todosLosDanos.filter(d => d.ubicacion === vistaActual);
-                    if (!filtrados.length) {
-                        damageList.innerHTML = '';
-                        return;
-                    }
-                    damageList.innerHTML = filtrados.map((d, i) => `
-            <div class="ver-dano-item">
-                <div class="ver-dano-num">${i + 1}</div>
-                <span class="ver-dano-tipo">${d.tipo_dano}</span>
-                <span class="ver-dano-desc">${d.descripcion}</span>
-            </div>
-        `).join('');
-                }
-
-                // Init: esperar a que cargue la imagen
-                if (carImage.complete) {
-                    renderPins();
-                    renderList();
-                } else carImage.addEventListener('load', () => {
-                    renderPins();
-                    renderList();
-                });
-            })();
-    <?php endif; ?>
-
-    // ── CAMBIAR ESTADO ────────────────────────────────────────────
-    async function cambiarEstado(id_orden, estado) {
-        const labels = {
-            en_proceso: 'En Proceso',
-            completado: 'Completada',
-            cancelado: 'Cancelada'
-        };
-
-        const confirmado = await Swal.fire({
-            title: `¿Cambiar a "${labels[estado]}"?`,
-            icon: 'question',
-            showCancelButton: true,
-            confirmButtonText: 'Sí, cambiar',
-            cancelButtonText: 'No',
-            confirmButtonColor: '#00ff00',
-            background: '#1a1a1a',
-            color: '#fff'
-        });
-
-        if (!confirmado.isConfirmed) return;
-
-        try {
-            const formData = new FormData();
-            formData.append('id_orden', id_orden);
-            formData.append('estado', estado);
-
-            const response = await fetch('/comodin_motors/API/ordenes/estado', {
-                method: 'POST',
-                body: formData
-            });
-            const data = await response.json();
-
-            if (data.codigo === 1) {
-                await Swal.fire({
-                    icon: 'success',
-                    title: 'Estado actualizado',
-                    timer: 1500,
-                    showConfirmButton: false,
-                    background: '#1a1a1a',
-                    color: '#fff'
-                });
-                location.reload();
-            } else {
-                throw new Error(data.mensaje);
-            }
-        } catch (error) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: error.message,
-                background: '#1a1a1a',
-                color: '#fff'
-            });
-        }
-    }
-</script>
+        <script src="/comodin_motors/build/js/orden/ver.js" type="module"></script>

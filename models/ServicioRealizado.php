@@ -28,15 +28,17 @@ class ServicioRealizado extends ActiveRecord
     public function __construct($args = [])
     {
         $this->id_servicio_realizado = $args['id_servicio_realizado'] ?? null;
-        $this->id_orden = $args['id_orden'] ?? null;
-        $this->descripcion = $args['descripcion'] ?? '';
-        $this->cantidad = $args['cantidad'] ?? 1;
-        $this->precio_unitario = $args['precio_unitario'] ?? 0.00;
-        $this->subtotal = $args['subtotal'] ?? 0.00;
-        $this->tipo = $args['tipo'] ?? 'servicio';
+        $this->id_orden              = $args['id_orden']    ?? null;
+        $this->descripcion           = $args['descripcion'] ?? '';
+        $this->cantidad              = $args['cantidad']    ?? 1;
+        $this->tipo                  = $args['tipo']        ?? 'servicio';
 
-        // Mantener compatibilidad: costo = precio_unitario por defecto
-        $this->costo = $args['costo'] ?? $this->precio_unitario;
+        // ← aceptar 'costo' o 'precio_unitario' indistintamente
+        $this->precio_unitario = floatval(
+            $args['precio_unitario'] ?? $args['costo'] ?? 0.00
+        );
+        $this->costo    = $this->precio_unitario;
+        $this->subtotal = $args['subtotal'] ?? 0.00;
     }
 
     /**

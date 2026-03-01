@@ -60,11 +60,17 @@ class OrdenController
             return;
         }
 
-        $tecnicos = Tecnico::obtenerActivos();
+        $tecnicos   = Tecnico::obtenerActivos();
+        $servicios  = ServicioRealizado::obtenerPorOrden($id_orden);
+        $inventario = InventarioVehiculo::obtenerPorOrden($id_orden);
+        $danos      = DanoVehiculo::obtenerPorOrden($id_orden);
 
         $router->render('orden/ver', [
-            'orden'    => $orden,
-            'tecnicos' => $tecnicos
+            'orden'      => $orden,
+            'tecnicos'   => $tecnicos,
+            'servicios'  => $servicios,
+            'inventario' => $inventario,
+            'danos'      => $danos
         ]);
     }
 

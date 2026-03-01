@@ -7,6 +7,7 @@ module.exports = {
     'js/inicio' : './src/js/inicio.js',
     'js/orden/index' : './src/js/orden/index.js',
     'js/orden/nueva' : './src/js/orden/nueva.js',
+    'js/orden/ver' : './src/js/orden/ver.js',
 
   },
   output: {

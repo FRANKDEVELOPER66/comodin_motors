@@ -90,6 +90,15 @@ class ComodinMotorsApp {
     // LOADER
     // ============================================
     initLoader() {
+        // ✅ Si viene de un cambio de estado, ocultar loader inmediatamente
+        if (sessionStorage.getItem('skipLoader') === '1') {
+            sessionStorage.removeItem('skipLoader');
+            if (this.loader) {
+                this.loader.style.display = 'none';
+            }
+            return;
+        }
+
         window.addEventListener('load', () => {
             setTimeout(() => {
                 if (this.loader) {
